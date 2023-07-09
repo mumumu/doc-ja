@@ -151,7 +151,7 @@ PHP 8.3 UPGRADE NOTES
 
 - $_SERVER['SERVER_SOFTWARE'] value from the built-in CLI server changed
   to make it compliant with RFC3875.
-- ビルトインウェブサーバーの $_SERVER['SERVER_SOFTWARE'] の値は、RFC3875 に準拠する値に変更されました。
+- ビルトインウェブサーバーの $_SERVER['SERVER_SOFTWARE'] の値が 、RFC3875 に準拠する値に変更されました。
 
 ========================================
 4. 推奨されなくなった機能
@@ -271,9 +271,14 @@ PHP 8.3 UPGRADE NOTES
 - PGSQL:
   . pg_fetch_object now raises a ValueError instead of an Exception when the constructor_args
     argument is non empty with the class not having constructor.
+  . pg_fetch_object は、$constructor_args が空でないのにクラスにコンストラクタが存在しない場合、 Exception ではなく、
+    ValueError を発生させるようになりました。
   . pg_insert now raises a ValueError instead of a WARNING when the table specified is invalid.
+  . pg_insert は 指定されたテーブルが無効な場合に、警告ではなく ValueError を発生させるようになりました。
   . pg_insert and pg_convert raises a ValueError or a TypeError instead of a WARNING when the
     value/type of a field does not match properly with a PostGreSQL's type.
+  . pg_insert と pg_convert は、フィールドの値/タイプ が PostgreSQL の型と適切に一致しない場合に、
+    警告ではなく ValueError を発生させるようになりました。
 
 - 標準ライブラリ:
   . E_NOTICEs emitted by unserialize() have been promoted to E_WARNING.
@@ -291,10 +296,15 @@ PHP 8.3 UPGRADE NOTES
   . strtok() は、トークンの分割を開始した際にトークンが与えられていない場合、警告を発生させるようになりました。
   . password_hash() will now chain the underlying Random\RandomException
     as the ValueError’s $previous Exception when salt generation fails.
+  .
   . proc_open() $command array must now have at least one non empty element.
+  . proc_open() の $command 配列は、空でない要素を少なくともひとつ含んでいることが必須になりました。
   . array_sum() and array_product() now warn when values in the array cannot be converted to int/float.
     Previously arrays and objects where ignored whilst every other value was cast to int.
     Moreover, objects that define a numeric cast (e.g. GMP) are now casted instead of ignored.
+  . array_sum() と array_product() は、配列に含まれる値が int/float に変換できない場合、警告を発生させるようになりました。
+    これより前のバージョンでは、配列とオブジェクトは無視され、それら以外の値は int にキャストされていました。
+    さらに、数値へのキャストを定義しているオブジェクト (例: GMP) は、無視されるのではなく、数値に変換されるようになっています。
     RFC: https://wiki.php.net/rfc/saner-array-sum-product
 
 ========================================
