@@ -95,7 +95,6 @@ PHP 8.3 UPGRADE NOTES
       (e.g. range('5', 'z');)
     * range() 関数は、境界の値の一方が数字の文字の場合、もう片方の境界の値を整数にキャストせず、文字のリストを生成するようになりました。
 
-
   . The file() flags error check now catches all invalid flags. Notably
     FILE_APPEND was previously silently accepted.
   . file() 関数の flags パラメータは、すべての不正な値をチェックするようになりました。注意すべきなのは、これより前のバージョンで FILE_APPEND を黙って受け入れていましたが、このバージョンから受け入れなくなったことです。
@@ -181,7 +180,6 @@ PHP 8.3 UPGRADE NOTES
     in a future version of libzip
   . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなり、将来の libzip のバージョンでは削除されます。
 
-
 ========================================
 5. 変更された関数
 ========================================
@@ -223,11 +221,20 @@ PHP 8.3 UPGRADE NOTES
 - Intl:
   . datefmt_set_timezone (and its alias IntlDateformatter::setTimeZone)
     now returns true on success, previously null was returned.
+  . datefmt_set_timezone (と、そのエイリアスである IntlDateformatter::setTimeZone)
+    は、成功時に true を返すようになりました。
+    これより前のバージョンでは、null を返していました。
   . IntlBreakiterator::setText() now returns false on failure, previously
     null was returned.
     now returns true on sucess, previously null was returned.
+  . IntlBreakiterator::setText() は、失敗時に false を返すようになりました。
+    これより前のバージョンでは、null を返していました。
+    また、成功時に true を返すようになりました。
+    これより前のバージョンでは、null を返していました。
   . IntlChar::enumCharNames is now returning a boolean.
     Previously it returned null on success and false on failure.
+  . IntlChar::enumCharNames は、戻り値として boolean を返すようになりました。
+    これより前のバージョンでは、成功時に null、失敗時に false を返していました。
 
 - MBString:
   . mb_strtolower, mb_strtotitle, and mb_convert_case implement conditional
@@ -271,13 +278,17 @@ PHP 8.3 UPGRADE NOTES
 - 標準ライブラリ:
   . E_NOTICEs emitted by unserialize() have been promoted to E_WARNING.
     RFC: https://wiki.php.net/rfc/improve_unserialize_error_handling
+  . unserialize() で発生していた E_NOTICE は、E_WARNING に変更されました。
   . unserialize() now emits a new E_WARNING if the input contains unconsumed
     bytes.
+  . 消費されていない入力が残っている場合に、unserialize() は E_WARNING を発生させるよになりました。
     RFC: https://wiki.php.net/rfc/unserialize_warn_on_trailing_data
   . array_pad() is now only limited by the maximum number of elements an array
     can have. Before, it was only possible to add at most 1048576 elements at a
     time.
+  . array_pad() は、配列が持つことができる最大の要素数だけを制限するようになりました。これより前のバージョンでは、一度に追加できる最大の要素数が 1048576 になっていました。
   . strtok() raises a warning in the case token is not provided when starting tokenization.
+  . strtok() は、トークンの分割を開始した際にトークンが与えられていない場合、警告を発生させるようになりました。
   . password_hash() will now chain the underlying Random\RandomException
     as the ValueError’s $previous Exception when salt generation fails.
   . proc_open() $command array must now have at least one non empty element.
@@ -303,9 +314,13 @@ PHP 8.3 UPGRADE NOTES
 
 - Posix:
   . Added posix_sysconf call to get runtime informations.
+  . 実行時の情報を取得するために、posix_sysconf が追加されました。
   . Added posix_pathconf call to get configuration value from a directory/file.
+  . ディレクトリ/ファイルから設定値を取得するために、posix_pathconf が追加されました。
   . Added posix_fpathconf call to get configuration value from a file descriptor.
+  . ファイルディスクリプタから設定値を取得するために、posix_fpathconf が追加されました。
   . Added posix_eaccess call to check the effective user id's permission for a path.
+  . パスの実効ユーザーIDのパーミッションをチェックするために、posix_eaccess が追加されました。
 
 - PGSQL:
   . Added pg_set_error_context_visilibity to set the visibility of the context
@@ -443,36 +458,43 @@ PHP 8.3 UPGRADE NOTES
 12. Windows のサポート
 ========================================
 
+- Minimum supported Windows version has been bumped to Windows 8 or
+  Windows Server 2012
+- 最低限必要な Windows のバージョンが、Windows 8 と Windows Server 2012 になりました。
+
 ========================================
 13. その他の変更
 ========================================
 
-- Core:
+- PHP コア:
   . An Error is now thrown when the process call stack exceeds a certain size,
     to prevent stack-overflow-induced segmentation faults, with the goal of
     making debugging easier. The maximum allowed stack size is controlled
     by the INI directives zend.max_allowed_stack_size, zend.reserved_stack_size,
     and fiber.stack_size.
+  . プロセスのコールスタックがあるサイズを超えた場合、スタックオーバーフローが引き起こすセグメンテーションフォルトを避けるため、Error をスローするようになりました。この変更の目的は、デバッグをやりやすくするためです。許可されるスタックのサイズの最大値は INI ディレクティブ zend.max_allowed_stack_size, zend.reserved_stack_size, fiber.stack_size で制御できます。
 
 - FFI:
   . FFI::load() is now allowed during preloading when opcache.preload_user is the
     current system user. Previously, calling FFI::load() was not possible during
     preloading if the opcache.preload_user directive was set.
+  . opcache.preload_user が現在のシステムユーザーの場合でも、事前ロードの間に FFI::load() の呼び出しを許可するようになりました。これより前のバージョンでは、opcache.preload_user が設定されている場合は、事前ロードの間に FFI::load() の呼び出しを許可していませんでした。
 
 - Opcache:
   . In the cli and phpdbg SAPIs, preloading does not require the
     opcache.preload_user directive to be set anymore when running as root. In
     other SAPIs, this directive is required when running as root because
     preloading is done before the SAPI switches to an unprivileged user.
+  . cli SAPI と phpdbg SAPI では、root として事前ロードを実行する際に opcache.preload_user ディレクティブを設定することが必須ではなくなりました。これら以外の SAPI では、root として事前ロードを実行する際に このディレクティブの設定が未だ必須です。なぜなら、SAPI が特権を持っていないユーザに移行する前に事前ロードが実行されるからです。
 
 - Streams:
   . Blocking fread() on socket connection returns immediately if there are
     any buffered data instead of waiting for more data.
+  . ソケット接続をブロックする fread() 関数は、バッファリングされているデータが存在した場合、追加のデータをデータを待つのではなく、すぐに値を返すようになりました。
 
 ========================================
 14. パフォーマンスに関わる変更
 ========================================
-
 
 - DOM:
   . Looping over a DOMNodeList now uses caching. Therefore requesting items no
