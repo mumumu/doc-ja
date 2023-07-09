@@ -41,7 +41,7 @@ PHP 8.3 UPGRADE NOTES
 
   . Zend Max Execution Timers is now enabled by default for ZTS builds on
     Linux.
-  . PHP スクリプトが実行可能な秒数を制御するタイマーは、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
+  . スクリプトが実行可能な最大秒数を制御するタイマーが、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
 
   . Uses of traits with static properties will now redeclare static properties
     inherited from the parent class. This will create a separate static property
@@ -173,12 +173,12 @@ PHP 8.3 UPGRADE NOTES
     Calling SQLite3::enableExceptions(false) will trigger a depreciation warning
     in this version.
   . 例外を使うことが推奨されるようになりました。
-    警告は将来のバージョンで削除されるでしょう。SQLite3::enableExceptions(false) をコールすると、このバージョンでは推奨されない警告が発生します。
+    警告は将来のバージョンで削除されます。SQLite3::enableExceptions(false) をコールすると、このバージョンでは推奨されない警告が発生します。
 
 - Zip:
   . The ZipArchive::FL_RECOMPRESS constant is deprecated and will be removed
     in a future version of libzip
-  . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなり、将来の libzip のバージョンでは削除されます。
+  . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなり、将来の libzip のバージョンで削除されます。
 
 ========================================
 5. 変更された関数
@@ -266,7 +266,9 @@ PHP 8.3 UPGRADE NOTES
 - mysqli:
   . mysqli_fetch_object now raises a ValueError instead of an Exception when the constructor_args
     argument is non empty with the class not having constructor.
+  . mysqli_fetch_object は、 $constructor_args が空でないのにクラスにコンストラクタが存在しない場合、 Exception ではなく、ValueError を発生させるようになりました。
   . mysqli_poll now raises a ValueError when the read nor error arguments are passed.
+  . mysqli_poll は、$read と $error が両方渡されない場合、ValueError を発生させるようになりました。
 
 - PGSQL:
   . pg_fetch_object now raises a ValueError instead of an Exception when the constructor_args
@@ -277,7 +279,7 @@ PHP 8.3 UPGRADE NOTES
   . pg_insert は 指定されたテーブルが無効な場合に、警告ではなく ValueError を発生させるようになりました。
   . pg_insert and pg_convert raises a ValueError or a TypeError instead of a WARNING when the
     value/type of a field does not match properly with a PostGreSQL's type.
-  . pg_insert と pg_convert は、フィールドの値/タイプ が PostgreSQL の型と適切に一致しない場合に、
+  . pg_insert と pg_convert は、フィールドの値/タイプ が PostgreSQL の型と一致しない場合に、
     警告ではなく ValueError を発生させるようになりました。
 
 - 標準ライブラリ:
@@ -374,6 +376,7 @@ PHP 8.3 UPGRADE NOTES
 - DOM:
   . The DOM lifetime mechanism has been reworked such that implicitly removed
     nodes can still be fetched. Previously this resulted in an exception.
+  . DOM の寿命を管理する仕組みが書き直され、暗黙のうちに削除されていたノードが取得できるようになりました。これより前のバージョンでは、削除されていたノードを取得しようとすると例外が発生していました。
 
 - SQLite3
   . The SQLite3 class now throws \SQLite3Exception (extends \Exception) instead
