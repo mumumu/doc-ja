@@ -82,7 +82,7 @@ PHP 8.3 UPGRADE NOTES
       値そのものが 0 にキャストされる動作はそのままです。
     * An E_WARNING is now emitted if $start or $end has more than one byte,
       only if it is a non-numeric string.
-    * $start や $end の長さが1バイトより長い場合、それが数値形式の文字列の場合にのみ、E_WARNING が発生するようになりました。
+    * $start や $end の長さが1バイトより長い場合には、それが数値形式の文字列でない場合に限り、E_WARNING が発生するようになりました。
     * An E_WARNING is now emitted if $start or $end is cast to an integer
       because the other boundary input is a number. (e.g. range(5, 'z');)
     * $start や $end が整数型にキャストした値の場合、E_WARNING が発生するようになりました。なぜなら、他の境界の値は数値だからです。(e.g. range(5, 'z');)
