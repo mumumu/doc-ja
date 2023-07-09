@@ -1,0 +1,493 @@
+PHP 8.3 UPGRADE NOTES
+
+1. Backward Incompatible Changes
+2. New Features
+3. Changes in SAPI modules
+4. Deprecated Functionality
+5. Changed Functions
+6. New Functions
+7. New Classes and Interfaces
+8. Removed Extensions and SAPIs
+9. Other Changes to Extensions
+10. New Global Constants
+11. Changes to INI File Handling
+12. Windows Support
+13. Other Changes
+14. Performance Improvements
+
+========================================
+1. 下位互換性のない変更点
+========================================
+
+- PHP コア:
+  . Programs that were very close to overflowing the call stack may now throw an
+    Error when using more than
+    `zend.max_allowed_stack_size-zend.reserved_stack_size` bytes of stack
+    (`fiber.stack_size-zend.reserved_stack_size` for fibers).
+  . コールスタックがオーバーフローしそうになっているプログラムは、`zend.max_allowed_stack_size-zend.reserved_stack_size`(ファイバーの場合は `fiber.stack_size-zend.reserved_stack_size`) バイト以上のスタックを使い切った時点で Error をスローするようになりました。
+
+  . Class constants can now be accessed dynamically using the C::{$name} syntax.
+  . クラス定数は、C::{$name} という構文で動的にアクセスできるようになりました
+    RFC: https://wiki.php.net/rfc/dynamic_class_constant_fetch
+
+  . Executing proc_get_status() multiple times will now always return the right
+    value on posix systems. Previously, only the first call of the function
+    returned the right value. Executing proc_close() after proc_get_status() will
+    now also return the right exit code. Previously this would return -1.
+    Internally, this works by caching the result on posix systems. If you want
+    the old behaviour, you can check the "cached" key in the array returned by
+    proc_get_status() to check whether the result was cached.
+  . proc_get_status() を複数回コールした場合、posix システム上では常に正しい値を返すようになりました。これより前のバージョンでは、最初の呼び出しの場合にだけ正しい値を返していました。proc_get_status() をコールしたあとに proc_close() を呼び出した場合も、正しい終了コードを返すようになりました。これより前のバージョンでは、-1 を返していました。posix システムでは、この処理は結果の値をキャッシュすることで実現しています。以前の振る舞いを望む場合、proc_get_status() が返す配列の "cached" キーをチェックすることで、結果がキャッシュされているかをチェックできます。
+
+  . Zend Max Execution Timers is now enabled by default for ZTS builds on
+    Linux.
+  . PHP スクリプトが実行可能な秒数を制御するタイマーは、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
+
+  . Uses of traits with static properties will now redeclare static properties
+    inherited from the parent class. This will create a separate static property
+    storage for the current class. This is analogous to adding the static
+    property to the class directly without traits.
+  . static プロパティと一緒にトレイトを使うと、親クラスから継承する static プロパティを再宣言するようになりました。つまり、現在のクラスのために別の static プロパティを作成するということです。これは、トレイトを使わずに直接 static プロパティを追加する操作に似ています。
+
+  . Assigning a negative index n to an empty array will now make sure that the
+    next index is n+1 instead of 0.
+  . 空の配列のインデックス n に負の値を割り当てた場合、その次のインデックスは 0 ではなく、必ず n+1 になりました。
+
+  . Static variable initializers can now contain arbitrary expressions.
+    RFC: https://wiki.php.net/rfc/arbitrary_static_variable_initializers
+  . static 変数の初期化子に、任意の式を含められるようになりました。
+
+- FFI:
+  . C functions that have a return type of void now return null instead of
+    returning the following object object(FFI\CData:void) { }
+  . void 型を返すC言語の関数は、object(FFI\CData:void) { } ではなく、null を返すようになりました。
+
+- 標準ライブラリ:
+  . The range() function has had various changes:
+  . range() 関数に対して、複数の変更が加えられました:
+    * A TypeError is now thrown when passing objects, resources, or arrays
+      as the boundary inputs
+    * オブジェクトやリソース、配列を境界の値として渡すと、TypeError がスローされるようになりました。
+    * A more descriptive ValueError is thrown when passing 0 for $step
+    * step に 0 を渡すと、よりわかりやすい ValueError がスローされるようになりました。
+    * A ValueError is now thrown when using a negative $step for increasing ranges
+    * 範囲が増加しているのに、$step に負の値を渡すと、ValueError がスローされるようになりました。
+    * If $step is a float that can be interpreted as an int, it is now done so
+    * $step が 整数型として解釈できる float の場合、整数型として解釈するようになりました。 
+    * A ValueError is now thrown if any argument is infinity or NAN
+    * 引数が無限大または NAN の場合、ValueError がスローされるようになりました。
+    * An E_WARNING is now emitted if $start or $end is the empty string.
+      The value continues to be cast to the value 0.
+    * $start と $end が空文字列の場合、E_WARNING が発生するようになりました。
+      値そのものが 0 にキャストされる動作はそのままです。
+    * An E_WARNING is now emitted if $start or $end has more than one byte,
+      only if it is a non-numeric string.
+    * $start や $end の長さが1バイトより長い場合、それが数値形式の文字列の場合にのみ、E_WARNING が発生するようになりました。
+    * An E_WARNING is now emitted if $start or $end is cast to an integer
+      because the other boundary input is a number. (e.g. range(5, 'z');)
+    * $start や $end が整数型にキャストした値の場合、E_WARNING が発生するようになりました。なぜなら、他の境界の値は数値だからです。(e.g. range(5, 'z');)
+    * An E_WARNING is now emitted if $step is a float when trying to generate
+      a range of characters, except if both boundary inputs are numeric strings
+      (e.g. range('5', '9', 0.5); does not produce a warning)
+    * $step が float の場合で、ある範囲の文字を生成しようとした場合、E_WARNING が発生するようになりました。但し、境界の値が双方ともに数値形式の文字列の場合を除きます。(例: range('5', '9', 0.5); のようなコードは、警告が発生しません)
+    * range() now produce a list of characters if one of the boundary inputs is
+      a string digit instead of casting the other input to int
+      (e.g. range('5', 'z');)
+    * range() 関数は、境界の値の一方が数字の文字の場合、もう片方の境界の値を整数にキャストせず、文字のリストを生成するようになりました。
+
+
+  . The file() flags error check now catches all invalid flags. Notably
+    FILE_APPEND was previously silently accepted.
+  . file() 関数の flags パラメータは、すべての不正な値をチェックするようになりました。注意すべきなのは、これより前のバージョンで FILE_APPEND を黙って受け入れていましたが、このバージョンから受け入れなくなったことです。
+
+========================================
+2. 新機能
+========================================
+
+- PHP コア
+  . Anonymous classes may now be marked as readonly.
+  . 無名クラスは、読み取り専用クラスとしてマークされるようになりました。
+
+  . Readonly properties can now be reinitialized during cloning.
+    RFC: https://wiki.php.net/rfc/readonly_amendments
+  . 読み取り専用プロパティは、clone する際にも再初期化できるようになりました。
+
+  . Class, interface, trait, and enum constants now support type
+    declarations. RFC: https://wiki.php.net/rfc/typed_class_constants
+  . クラス、インターフェイス、トレイト、そして列挙型の定数は、新たに型宣言をサポートするようになりました。
+
+  . Closures created from magic methods can now accept named arguments.
+  . マジックメソッド経由で作られたクロージャーは、名前付き引数を受け入れるようになりました。
+
+  . The final modifier may now be used when using a method from a trait.
+  . トレイトからメソッドを使う場合に、final を指定できるようになりました。
+
+  . Added the #[\Override] attribute to check that a method exists
+    in a parent class or implemented interface.
+    RFC: https://wiki.php.net/rfc/marking_overriden_methods
+  . 親クラスまたは実装済みのインターフェイス内で、メソッドが存在するかどうかをチェックするアトリビュートとして、#[\Override] が追加されました。
+
+- CLI
+  . It is now possible to lint multiple files.
+  . 複数のファイルの文法チェックを一度にできるようになりました。
+
+- Posix
+  . posix_getrlimit() now takes an optional $res parameter to allow fetching a
+    single resource limit.
+  . posix_getrlimit() は、リソースの最大値をひとつだけ取得できる、オプションの $res パラメータが使えるようになりました。
+  . posix_isatty() now raises type warnings for integers following the usual ZPP semantics
+  . posix_isatty() は、整数値に対しては通常のパラメータ解釈のセマンティクス(ZPP) に従い、警告を発生させるようになりました。
+  . posix_ttyname() now raises type warnings for integers following the usual ZPP semantics
+    and value warnings for invalid file descriptor integers.
+  . posix_ttyname() は、整数値に対しては通常のパラメータ解釈のセマンティクス(ZPP) に従い、警告を発生させるようになりました。さらに、無効なファイルディスクリプタの整数値に対しても、警告を発生させるようになっています。
+
+- Streams
+  . Streams can now emit the STREAM_NOTIFY_COMPLETED notification. This was previously
+    not implemented.
+  . 以前のバージョンでは実装されていなかった、通知 STREAM_NOTIFY_COMPLETED を発生させられるようになりました。
+
+========================================
+3. SAPI モジュールに対する変更
+========================================
+
+- $_SERVER['SERVER_SOFTWARE'] value from the built-in CLI server changed
+  to make it compliant with RFC3875.
+- ビルトインウェブサーバーの $_SERVER['SERVER_SOFTWARE'] の値は、RFC3875 に準拠する値に変更されました。
+
+========================================
+4. 推奨されなくなった機能
+========================================
+
+- Intl
+  . The U_MULTIPLE_DECIMAL_SEP*E*RATORS constant had been deprecated, using
+    the U_MULTIPLE_DECIMAL_SEP*A*RATORS instead is recommended.
+  . 定数 U_MULTIPLE_DECIMAL_SEP*E*RATORS は、推奨されなくなりました。
+    代わりに U_MULTIPLE_DECIMAL_SEP*A*RATORS を代わりに使いましょう。
+
+- Random
+  . The MT_RAND_PHP Mt19937 variant is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
+  . メルセンヌ・ツイスタの動作モード MT_RAND_PHP は、推奨されなくなりました。
+
+- SQLite3
+  . Using exceptions is now preferred, warnings will be removed in the future.
+    Calling SQLite3::enableExceptions(false) will trigger a depreciation warning
+    in this version.
+  . 例外を使うことが推奨されるようになりました。
+    警告は将来のバージョンで削除されるでしょう。SQLite3::enableExceptions(false) をコールすると、このバージョンでは推奨されない警告が発生します。
+
+- Zip:
+  . The ZipArchive::FL_RECOMPRESS constant is deprecated and will be removed
+    in a future version of libzip
+  . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなり、将来の libzip のバージョンでは削除されます。
+
+
+========================================
+5. 変更された関数
+========================================
+
+- PHP コア:
+  . gc_status() has added the following 4 fields:
+    "running" => bool
+    "protected" => bool
+    "full" => bool
+    "buffer_size" => int
+    See GH-9336
+  . gc_status() に、以下の4つのフィールドが追加されました。
+    "running" => bool
+    "protected" => bool
+    "full" => bool
+    "buffer_size" => int
+
+  . class_alias() now supports creating an alias of an internal class.
+  . class_alias() は、内部クラスのエイリアスを作成する操作もサポートしました。
+
+  . Setting `open_basedir` at runtime using `ini_set('open_basedir', ...);` no
+    longer accepts paths containing the parent directory (`..`). Previously,
+    only paths starting with `..` were disallowed. This could easily be
+    circumvented by prepending `./` to the path.
+  . `ini_set('open_basedir', ...);` を実行して実行時に `open_basedir` を設定する場合、親ディレクトリ (`..`) を含んだパスを受け入れなくなりました。これより前のバージョンでは、`..` で始まるパスだけを拒否していました。この制限は、パスの先頭に `./` を付加することで簡単に回避できてしまっていました。
+
+  . User exception handlers now catch exceptions during shutdown.
+  . ユーザー定義の例外ハンドラは、シャットダウン時の例外もキャッチするようになりました。
+
+- Dom:
+  . Changed DOMCharacterData::appendData() tentative return type to true.
+  . DOMCharacterData::appendData() の仮の戻り値の型が、true になりました。
+
+- Gd:
+  . Changed imagerotate signature, removed the `ignore_transparent` argument
+    as it was not used internally anyway from PHP 7.x.
+  . imagerotate 関数のシグネチャが変更され、PHP 7.x 以降で内部的に使われていなかったパラメータ `ignore_transparent` が削除されました。
+
+- Intl:
+  . datefmt_set_timezone (and its alias IntlDateformatter::setTimeZone)
+    now returns true on success, previously null was returned.
+  . IntlBreakiterator::setText() now returns false on failure, previously
+    null was returned.
+    now returns true on sucess, previously null was returned.
+  . IntlChar::enumCharNames is now returning a boolean.
+    Previously it returned null on success and false on failure.
+
+- MBString:
+  . mb_strtolower, mb_strtotitle, and mb_convert_case implement conditional
+    casing rules for the Greek letter sigma. For mb_convert_case, conditional
+    casing only applies to MB_CASE_LOWER and MB_CASE_TITLE modes, not to
+    MB_CASE_LOWER_SIMPLE and MB_CASE_TITLE_SIMPLE.
+  . mb_decode_mimeheader interprets underscores in QPrint-encoded MIME
+    encoded words as required by RFC 2047; they are converted to spaces.
+    Underscores must be encoded as "=5F" in such MIME encoded words.
+  . In rare cases, mb_encode_mimeheader will transfer-encode its input
+    string where it would pass it through as raw ASCII in PHP 8.2.
+  . mb_encode_mimeheader no longer drops NUL (zero) bytes when
+    QPrint-encoding the input string. This previously caused strings in
+    certain text encodings, especially UTF-16 and UTF-32, to be
+    corrupted by mb_encode_mimeheader.
+  . mb_detect_encoding's "non-strict" mode now behaves as described in the
+    documentation. Previously, it would return false if the same byte
+    (for example, the first byte) of the input string was invalid in all
+    candidate encodings. More generally, it would eliminate candidate
+    encodings from consideration when an invalid byte was seen, and if the
+    same input byte eliminated all remaining encodings still under
+    consideration, it would return false. On the other hand, if all candidate
+    encodings but one were eliminated from consideration, it would return the
+    last remaining one without regard for how many encoding errors might be
+    encountered later in the string. This is different from the behavior
+    described in the documentation, which says: "If strict is set to false,
+    the closest matching encoding will be returned."
+
+- mysqli:
+  . mysqli_fetch_object now raises a ValueError instead of an Exception when the constructor_args
+    argument is non empty with the class not having constructor.
+  . mysqli_poll now raises a ValueError when the read nor error arguments are passed.
+
+- PGSQL:
+  . pg_fetch_object now raises a ValueError instead of an Exception when the constructor_args
+    argument is non empty with the class not having constructor.
+  . pg_insert now raises a ValueError instead of a WARNING when the table specified is invalid.
+  . pg_insert and pg_convert raises a ValueError or a TypeError instead of a WARNING when the
+    value/type of a field does not match properly with a PostGreSQL's type.
+
+- 標準ライブラリ:
+  . E_NOTICEs emitted by unserialize() have been promoted to E_WARNING.
+    RFC: https://wiki.php.net/rfc/improve_unserialize_error_handling
+  . unserialize() now emits a new E_WARNING if the input contains unconsumed
+    bytes.
+    RFC: https://wiki.php.net/rfc/unserialize_warn_on_trailing_data
+  . array_pad() is now only limited by the maximum number of elements an array
+    can have. Before, it was only possible to add at most 1048576 elements at a
+    time.
+  . strtok() raises a warning in the case token is not provided when starting tokenization.
+  . password_hash() will now chain the underlying Random\RandomException
+    as the ValueError’s $previous Exception when salt generation fails.
+  . proc_open() $command array must now have at least one non empty element.
+  . array_sum() and array_product() now warn when values in the array cannot be converted to int/float.
+    Previously arrays and objects where ignored whilst every other value was cast to int.
+    Moreover, objects that define a numeric cast (e.g. GMP) are now casted instead of ignored.
+    RFC: https://wiki.php.net/rfc/saner-array-sum-product
+
+========================================
+6. 新しく追加された関数
+========================================
+
+- JSON:
+  . Added json_validate(), which returns whether the json is valid for
+    the given $depth and $options.
+    RFC: https://wiki.php.net/rfc/json_validate
+  . json が指定された $depth を $option に照らして正しいかを返す関数として、json_validate() が追加されました。
+
+- MBString:
+  . Added mb_str_pad(), which is the mbstring equivalent of str_pad().
+    RFC: https://wiki.php.net/rfc/mb_str_pad
+  . str_pad() のマルチバイト版として、mb_str_pad() が追加されました。
+
+- Posix:
+  . Added posix_sysconf call to get runtime informations.
+  . Added posix_pathconf call to get configuration value from a directory/file.
+  . Added posix_fpathconf call to get configuration value from a file descriptor.
+  . Added posix_eaccess call to check the effective user id's permission for a path.
+
+- PGSQL:
+  . Added pg_set_error_context_visilibity to set the visibility of the context
+    in error messages (with libpq >= 9.6).
+  . エラーメッセージの CONTEXT の表示範囲を設定する関数として、pg_set_error_context_visilibity が追加されました (libpq >= 9.6 で利用可能です)
+
+- Random:
+  . Added Randomizer::getBytesFromString().
+    RFC: https://wiki.php.net/rfc/randomizer_additions
+  . Added Randomizer::nextFloat(), ::getFloat(), and IntervalBoundary.
+    RFC: https://wiki.php.net/rfc/randomizer_additions
+  . Changed mt_srand() and srand() to not check the number of arguments to
+    determine whether a random seed should be used. Passing null will generate
+    a random seed, 0 will use zero as the seed. The functions are now consistent
+    with Mt19937::__construct().
+
+- Reflection:
+  . Return type of ReflectionClass::getStaticProperties() is no longer nullable.
+  . ReflectionClass::getStaticProperties() の戻り値は、nullable ではなくなりました。
+
+- Sockets:
+  . Added socket_atmark to checks if the socket is OOB marked.
+  . ソケットが OOB データを送信するものとしてマークされているかを調べる関数として、socket_atmark が追加されました。
+
+- Zip:
+  . Added ZipArchive::setArchiveFlag and ZipArchive::getArchiveFlag methods.
+  . ZipArchive::setArchiveFlag と ZipArchive::getArchiveFlag メソッドが追加されました。
+
+========================================
+7. New Classes and Interfaces
+========================================
+
+========================================
+8. Removed Extensions and SAPIs
+========================================
+
+========================================
+9. 拡張モジュールへのその他の変更
+========================================
+
+- DOM:
+  . The DOM lifetime mechanism has been reworked such that implicitly removed
+    nodes can still be fetched. Previously this resulted in an exception.
+
+- SQLite3
+  . The SQLite3 class now throws \SQLite3Exception (extends \Exception) instead
+    of \Exception.
+  . SQLite3 クラスは、\Exception ではなく、(\Exception を継承した) \SQLite3Exception をスローするようになりました。
+  . The SQLite error code is now passed in the exception error code instead of being
+    included in the error message.
+  . SQLite のエラーコードは、エラーメッセージに含められるのではなく、例外に渡されるようになりました。
+
+========================================
+10. 新しいグローバル定数
+========================================
+
+- Intl:
+  . MIXED_NUMBERS (Spoofchecker).
+  . HIDDEN_OVERLAY (Spoofchecker).
+
+- OpenSSL:
+  . OPENSSL_CMS_OLDMIMETYPE
+  . PKCS7_NOOLDMIMETYPE
+
+- PCNTL:
+  . SIGINFO
+
+- PGSQL:
+  . PGSQL_TRACE_SUPPRESS_TIMESTAMPS.
+  . PGSQL_TRACE_REGRESS_MODE.
+  . PGSQL_ERRORS_SQLSTATE.
+
+- Posix:
+  . POSIX_SC_ARG_MAX.
+  . POSIX_SC_PAGESIZE.
+  . POSIX_SC_NPROCESSORS_CONF.
+  . POSIX_SC_NPROCESSORS_ONLN.
+
+- Sockets:
+  . SO_ATTACH_REUSEPORT_CBPF (Linux only).
+  . TCP_QUICKACK (Linux only).
+  . IP_DONTFRAG (FreeBSD only).
+  . IP_MTU_DISCOVER (Linux only).
+  . IP_PMTUDISC_DO (Linux only).
+  . IP_PMTUDISC_DONT (Linux only).
+  . IP_PMTUDISC_WANT (Linux only).
+  . IP_PMTUDISC_PROBE (Linux only).
+  . IP_PMTUDISC_INTERFACE (Linux only).
+  . IP_PMTUDISC_OMIT (Linux only).
+  . AF_DIVERT (FreeBSD only).
+  . SOL_UDPLITE.
+  . UDPLITE_RECV_CSCOV.
+  . UDPLITE_SEND_CSCOV.
+  . SO_RERROR (NetBSD only).
+  . SO_ZEROIZE (OpenBSD only).
+  . SO_SPLICE (OpenBSD only).
+  . TCP_REPAIR (Linux only).
+  . SO_REUSEPORT_LB (FreeBSD only).
+  . IP_BIND_ADDRESS_NO_PORT (Linux only).
+
+- Zip:
+  . ZipArchive::ER_DATA_LENGTH (libzip >= 1.10)
+  . ZipArchive::ER_NOT_ALLOWED (libzip >= 1.10)
+  . ZipArchive::AFL_RDONLY (libzip >= 1.10)
+  . ZipArchive::AFL_IS_TORRENTZIP (libzip >= 1.10)
+  . ZipArchive::AFL_WANT_TORRENTZIP (libzip >= 1.10)
+  . ZipArchive::AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE (libzip >= 1.10)
+  . ZipArchive::FL_OPEN_FILE_NOW
+
+========================================
+11. INIファイルのハンドリングに対する変更
+========================================
+
+- zend.max_allowed_stack_size
+  . New INI directive to set the maximum allowed stack size. Possible
+    values are `0` (detect the process or thread maximum stack size), `-1`
+    (no limit), or a positive number of bytes. The default is `0`. When it
+    is not possible to detect the the process or thread maximum stack size,
+    a known system default is used. Setting this value too high has the same
+    effect as disabling the stack size limit. Fibers use fiber.stack_size
+    as maximum allowed stack size. An Error is thrown when the process call
+    stack exceeds `zend.max_allowed_stack_size-zend.reserved_stack_size`
+    bytes, to prevent stack-overflow-induced segmentation faults, with
+    the goal of making debugging easier. The stack size increases during
+    uncontrolled recursions involving internal functions or the magic methods
+    __toString, __clone, __sleep, __destruct.  This is not related to stack
+    buffer overflows, and is not a security feature.
+
+- zend.reserved_stack_size
+  . New INI directive to set the reserved stack size, in bytes. This is
+    subtracted from the max allowed stack size, as a buffer, when checking the
+    stack size.
+
+========================================
+12. Windows のサポート
+========================================
+
+========================================
+13. その他の変更
+========================================
+
+- Core:
+  . An Error is now thrown when the process call stack exceeds a certain size,
+    to prevent stack-overflow-induced segmentation faults, with the goal of
+    making debugging easier. The maximum allowed stack size is controlled
+    by the INI directives zend.max_allowed_stack_size, zend.reserved_stack_size,
+    and fiber.stack_size.
+
+- FFI:
+  . FFI::load() is now allowed during preloading when opcache.preload_user is the
+    current system user. Previously, calling FFI::load() was not possible during
+    preloading if the opcache.preload_user directive was set.
+
+- Opcache:
+  . In the cli and phpdbg SAPIs, preloading does not require the
+    opcache.preload_user directive to be set anymore when running as root. In
+    other SAPIs, this directive is required when running as root because
+    preloading is done before the SAPI switches to an unprivileged user.
+
+- Streams:
+  . Blocking fread() on socket connection returns immediately if there are
+    any buffered data instead of waiting for more data.
+
+========================================
+14. パフォーマンスに関わる変更
+========================================
+
+
+- DOM:
+  . Looping over a DOMNodeList now uses caching. Therefore requesting items no
+    longer takes quadratic time by default.
+  . DOMNodeList をループさせた場合、キャッシュされるようになりました。よって、ノードをリクエストする処理に、デフォルトで O(n^2) 時間かかることはなくなりました。
+
+  . Getting text content from nodes now avoids an allocation, resulting in a
+    performance gain.
+  . ノードからテキストを取得する際に、メモリを確保する処理を避けるようになりました。結果として、パフォーマンスが向上しています。
+
+- 標準ライブラリ:
+  . The file() flags error check is now about 7% faster.
+  . file() 関数の flags パラメータのエラーチェックは、約7% 高速になりました。
+
+- SPL:
+  . RecursiveDirectoryIterator now performs less I/O when looping over a
+    directory.
+  . RecursiveDirectoryIterator を使ってディレクトリをループする場合の I/O が削減されました。
