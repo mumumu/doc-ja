@@ -478,7 +478,7 @@ PHP 8.3 UPGRADE NOTES
   . FFI::load() is now allowed during preloading when opcache.preload_user is the
     current system user. Previously, calling FFI::load() was not possible during
     preloading if the opcache.preload_user directive was set.
-  . opcache.preload_user が現在のシステムユーザーの場合でも、事前ロードの間に FFI::load() の呼び出しを許可するようになりました。これより前のバージョンでは、opcache.preload_user が設定されている場合は、事前ロードの間に FFI::load() の呼び出しを許可していませんでした。
+  . opcache.preload_user が現在のシステムユーザーに設定されている場合でも、事前ロードの間に FFI::load() の呼び出しを許可するようになりました。これより前のバージョンでは、opcache.preload_user が設定されている場合は、事前ロードの間に FFI::load() の呼び出しを許可していませんでした。
 
 - Opcache:
   . In the cli and phpdbg SAPIs, preloading does not require the
