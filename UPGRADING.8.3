@@ -308,6 +308,11 @@ PHP 8.3 UPGRADE NOTES
     これより前のバージョンでは、配列とオブジェクトは無視され、それら以外の値は int にキャストされていました。
     さらに、数値へのキャストを定義しているオブジェクト (例: GMP) は、無視されるのではなく、数値に変換されるようになっています。
     RFC: https://wiki.php.net/rfc/saner-array-sum-product
+  . number_format() $decimal parameter handles rounding to negative places. It
+    means that when $decimals is negative, $num is rounded to $decimals
+    significant digits before the decimal point. Previously negative $decimals
+    got silently ignored and the number got rounded to zero decimal places.
+  . number_format() の $decimals パラメータは、負の値の四捨五入も扱うようになりました。つまり、$decimals が負の値の場合、$num は 小数点以下の有効桁数 $decimals 桁に丸められます。これより前のバージョンでは、負の $decimals を指定しても、黙って無視され、数値は小数点以下が0桁 になるように丸められていました。
 
 ========================================
 6. 新しく追加された関数
