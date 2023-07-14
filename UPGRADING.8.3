@@ -173,6 +173,14 @@ PHP 8.3 UPGRADE NOTES
     RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
   . メルセンヌ・ツイスタの動作モード MT_RAND_PHP は、推奨されなくなりました。
 
+- Standard:
+  . The assert_option() function is now deprecated.
+  . 関数 assert_option() は、推奨されなくなりました。
+  . The ASSERT_ACTIVE, ASSERT_BAIL,ASSERT_CALLBACK, ASSERT_EXCEPTION, and
+    ASSERT_WARNING constants have been deprecated.
+  . 定数 ASSERT_ACTIVE, ASSERT_BAIL,ASSERT_CALLBACK, ASSERT_EXCEPTION, ASSERT_WARNING は、推奨されなくなりました。
+    RFC: https://wiki.php.net/rfc/assert-string-eval-cleanup
+
 - SQLite3
   . Using exceptions is now preferred, warnings will be removed in the future.
     Calling SQLite3::enableExceptions(false) will trigger a depreciation warning
@@ -465,6 +473,27 @@ PHP 8.3 UPGRADE NOTES
 ========================================
 11. INIファイルのハンドリングに対する変更
 ========================================
+
+- assert.*
+  . The assert.* INI settings have been deprecated.
+    This comprises the following INI settings:
+     - assert.active
+     - assert.bail
+     - assert.callback
+     - assert.exception
+     - assert.warning
+    If the value of the setting is equal to the default value, no deprecation
+    notice is emitted.
+    The zend.assertions INI setting should be used instead.
+  . assert.* INI 設定は、推奨されなくなりました。
+    以下の INI 設定が該当します:
+     - assert.active
+     - assert.bail
+     - assert.callback
+     - assert.exception
+     - assert.warning
+    これらの設定値がデフォルト値の場合、推奨されない警告は発生しません。
+    zend.assertions を代わりに使うべきです。
 
 - zend.max_allowed_stack_size
   . New INI directive to set the maximum allowed stack size. Possible
