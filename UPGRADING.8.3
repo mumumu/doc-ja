@@ -284,6 +284,13 @@ PHP 8.3 UPGRADE NOTES
   . pg_insert と pg_convert は、フィールドの値/タイプ が PostgreSQL の型と一致しない場合に、
     警告ではなく ValueError を発生させるようになりました。
 
+- Random:
+  . Changed mt_srand() and srand() to not check the number of arguments to
+    determine whether a random seed should be used. Passing null will generate
+    a random seed, 0 will use zero as the seed. The functions are now consistent
+    with Mt19937::__construct().
+  . mt_srand() と srand() は、ランダムなシードを使うかを決めるために引数の数をチェックしなくなりました。null を渡すとランダムなシードを使います。0 を渡すとゼロをシードとして使います。これらの関数の振る舞いは、Mt19937::__construct() と一貫したものになりました。
+
 - 標準ライブラリ:
   . E_NOTICEs emitted by unserialize() have been promoted to E_WARNING.
     RFC: https://wiki.php.net/rfc/improve_unserialize_error_handling
@@ -351,10 +358,6 @@ PHP 8.3 UPGRADE NOTES
     RFC: https://wiki.php.net/rfc/randomizer_additions
   . Added Randomizer::nextFloat(), ::getFloat(), and IntervalBoundary.
     RFC: https://wiki.php.net/rfc/randomizer_additions
-  . Changed mt_srand() and srand() to not check the number of arguments to
-    determine whether a random seed should be used. Passing null will generate
-    a random seed, 0 will use zero as the seed. The functions are now consistent
-    with Mt19937::__construct().
 
 - Reflection:
   . Return type of ReflectionClass::getStaticProperties() is no longer nullable.
