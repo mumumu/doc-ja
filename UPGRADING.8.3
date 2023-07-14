@@ -163,6 +163,11 @@ PHP 8.3 UPGRADE NOTES
   . 定数 U_MULTIPLE_DECIMAL_SEP*E*RATORS は、推奨されなくなりました。
     代わりに U_MULTIPLE_DECIMAL_SEP*A*RATORS を使いましょう。
 
+- LDAP
+  . Calling ldap_connect() with separate hostname and port is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_3#deprecate_calling_ldap_connect_with_2_parameters
+  . ldap_connect() にホスト名とポートを別々に渡すことは、推奨されなくなりました。
+
 - Random
   . The MT_RAND_PHP Mt19937 variant is deprecated.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
