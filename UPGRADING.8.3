@@ -376,8 +376,10 @@ PHP 8.3 UPGRADE NOTES
 
 - Random:
   . Added Randomizer::getBytesFromString().
+  . Randomizer::getBytesFromString() が追加されました。
     RFC: https://wiki.php.net/rfc/randomizer_additions
   . Added Randomizer::nextFloat(), ::getFloat(), and IntervalBoundary.
+  . Randomizer::nextFloat(), ::getFloat(), IntervalBoundary が追加されました。
     RFC: https://wiki.php.net/rfc/randomizer_additions
 
 - Reflection:
@@ -513,11 +515,14 @@ PHP 8.3 UPGRADE NOTES
     uncontrolled recursions involving internal functions or the magic methods
     __toString, __clone, __sleep, __destruct.  This is not related to stack
     buffer overflows, and is not a security feature.
+  . 許可される最大のスタックサイズの値を設定するための、新しい INI ディレクティブです。設定できる値は、'0' (プロセスやスレッドの、スタックサイズの最大値を用います)、'-1' (無制限)、そして正の数値をバイト単位で指定します。デフォルトは '0' です。プロセスやスレッドのスタックサイズの最大値がわからない場合、既知のシステムのデフォルト値を使います。この値に大き過ぎる値を設定すると、スタックサイズの制限を無効にすることと同じ効果があります。ファイバーは 許可される最大のスタックサイズとして fiber.stack_size の値を使います。プロセスのコールスタックが `zend.max_allowed_stack_size-zend.reserved_stack_size` バイトを超えると、スタックオーバーフローが引き起こすセグメンテーションフォルトを防ぐため、Error がスローされます。これは、デバッグを容易にすることが目的です。スタックサイズは、内部関数やマジックメソッド __toString, __clone, __sleep, __destruct を含む、制御できない再帰処理によって増加します。この機能はスタックバッファのオーバーフローとは無関係ですし、セキュリティのための機能でもありません。
 
 - zend.reserved_stack_size
   . New INI directive to set the reserved stack size, in bytes. This is
     subtracted from the max allowed stack size, as a buffer, when checking the
     stack size.
+  . 予約済みのスタックサイズを設定するための、新しい INI ディレクティブです。
+    許可されたスタックサイズの最大値から、この値がバッファとして引かれ、スタックサイズがチェックされます。
 
 ========================================
 12. Windows のサポート
