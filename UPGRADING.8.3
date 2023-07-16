@@ -56,6 +56,14 @@ PHP 8.3 UPGRADE NOTES
   . Static variable initializers can now contain arbitrary expressions.
     RFC: https://wiki.php.net/rfc/arbitrary_static_variable_initializers
   . static 変数の初期化子に、任意の式を含められるようになりました。
+  . Class constant visibility variance is now correctly checked when inherited
+    from interfaces.
+  . クラス定数のアクセス権が、インターフェイスから継承した場合でも正しくチェックされるようになりました。
+  . WeakMaps entries whose key maps to itself (possibly transitively) may now be
+    removed during cycle collection if the key is not reachable except by
+    iterating over the WeakMap (reachability via iteration is considered weak).
+    Previously, such entries would never be automatically removed.
+  . (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照の回収時に削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
 
 - FFI:
   . C functions that have a return type of void now return null instead of
@@ -420,6 +428,14 @@ PHP 8.3 UPGRADE NOTES
 ========================================
 9. 拡張モジュールへのその他の変更
 ========================================
+
+- Core:
+  . WeakMaps now have ephemeron-like behavior: Entries whose key maps to itself
+    (possibly transitively) may be removed during cycle collection if the key is
+    not reachable except by iterating over the WeakMap (reachability via
+    iteration is considered weak). Previously, such entries would never be
+    automatically removed. (See GH-10932.)
+  . WeakMap は、以下の ephemeron ライクな振る舞いをするようになりました: (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照の回収時に削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
 
 - DOM:
   . The DOM lifetime mechanism has been reworked such that implicitly removed
