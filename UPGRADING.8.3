@@ -198,17 +198,29 @@ PHP 8.3 UPGRADE NOTES
 ========================================
 
 - PHP コア:
-  . gc_status() has added the following 4 fields:
+  . gc_status() has added the following 8 fields:
     "running" => bool
     "protected" => bool
     "full" => bool
     "buffer_size" => int
-    See GH-9336
-  . gc_status() に、以下の4つのフィールドが追加されました。
+    "application_time" => float: Total application time, in seconds (including
+    collector_time)
+    "collector_time" => float: Time spent collecting cycles, in seconds
+    (including destructor_time and free_time)
+    "destructor_time" => float: Time spent executing destructors during
+    cycle collection, in seconds
+    "free_time" => float: Time spent freeing values during cycle collection, in
+    seconds
+    See GH-9336, GH-11523
+  . gc_status() に、以下の8つのフィールドが追加されました。
     "running" => bool
     "protected" => bool
     "full" => bool
     "buffer_size" => int
+    "application_time" => float: gc の合計の実行時間を秒単位で示します(collector_time を含みます)
+    "collector_time" => float: 循環参照を回収するのに使った時間を秒単位で示します(dessructor_time と free_time を含みます)
+    "destructor_time" => float: 循環参照を回収している間に、デストラクタを実行した時間を秒単位で示します
+    "free_time" => float: 循環参照を回収している間に、メモリを開放するのにかかった時間を秒単位で示します
 
   . class_alias() now supports creating an alias of an internal class.
   . class_alias() は、内部クラスのエイリアスを作成する操作もサポートしました。
