@@ -63,7 +63,7 @@ PHP 8.3 UPGRADE NOTES
     removed during cycle collection if the key is not reachable except by
     iterating over the WeakMap (reachability via iteration is considered weak).
     Previously, such entries would never be automatically removed.
-  . (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照の回収時に削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
+  . (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照のコレクタが削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
 
 - FFI:
   . C functions that have a return type of void now return null instead of
@@ -443,7 +443,7 @@ PHP 8.3 UPGRADE NOTES
     not reachable except by iterating over the WeakMap (reachability via
     iteration is considered weak). Previously, such entries would never be
     automatically removed. (See GH-10932.)
-  . WeakMap は、以下の ephemeron ライクな振る舞いをするようになりました: (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照の回収時に削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
+  . WeakMap は、以下の ephemeron ライクな振る舞いをするようになりました: (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照のコレクタが削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
 
 - DOM:
   . The DOM lifetime mechanism has been reworked such that implicitly removed
