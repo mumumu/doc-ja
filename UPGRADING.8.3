@@ -320,7 +320,7 @@ PHP 8.3 UPGRADE NOTES
   . strtok() は、トークンの分割を開始した際にトークンが与えられていない場合、警告を発生させるようになりました。
   . password_hash() will now chain the underlying Random\RandomException
     as the ValueError’s $previous Exception when salt generation fails.
-  .
+  . password_hash() は、ソルトの生成が失敗した場合に、ValueError の $previous(直前にスローされた例外) として、既に存在する Random\RandomException をチェインするようになりました。
   . proc_open() $command array must now have at least one non empty element.
   . proc_open() の $command 配列は、空でない要素を少なくともひとつ含んでいることが必須になりました。
   . array_sum() and array_product() now warn when values in the array cannot be converted to int/float.
