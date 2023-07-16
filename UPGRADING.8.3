@@ -41,7 +41,7 @@ PHP 8.3 UPGRADE NOTES
 
   . Zend Max Execution Timers is now enabled by default for ZTS builds on
     Linux.
-  . スクリプトが実行可能な最大秒数を制御するタイマーが、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
+  . 実行時間の最大秒数を制御するタイマーが、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
 
   . Uses of traits with static properties will now redeclare static properties
     inherited from the parent class. This will create a separate static property
@@ -143,7 +143,7 @@ PHP 8.3 UPGRADE NOTES
 - Streams
   . Streams can now emit the STREAM_NOTIFY_COMPLETED notification. This was previously
     not implemented.
-  . 以前のバージョンでは実装されていなかった、通知 STREAM_NOTIFY_COMPLETED を発生させられるようになりました。
+  . 以前のバージョンでは実装されていなかった新しい通知として、STREAM_NOTIFY_COMPLETED が発生させられるようになりました。
 
 ========================================
 3. SAPI モジュールに対する変更
@@ -171,7 +171,7 @@ PHP 8.3 UPGRADE NOTES
 - Random
   . The MT_RAND_PHP Mt19937 variant is deprecated.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
-  . メルセンヌ・ツイスタの動作モード MT_RAND_PHP は、推奨されなくなりました。
+  . メルセンヌ・ツイスタ の動作モード MT_RAND_PHP は、推奨されなくなりました。
 
 - Standard:
   . The assert_option() function is now deprecated.
@@ -217,7 +217,7 @@ PHP 8.3 UPGRADE NOTES
     longer accepts paths containing the parent directory (`..`). Previously,
     only paths starting with `..` were disallowed. This could easily be
     circumvented by prepending `./` to the path.
-  . `ini_set('open_basedir', ...);` を実行して実行時に `open_basedir` を設定する場合、親ディレクトリ (`..`) を含んだパスを受け入れなくなりました。これより前のバージョンでは、`..` で始まるパスだけを拒否していました。この制限は、パスの先頭に `./` を付加することで簡単に回避できてしまっていました。
+  . `ini_set('open_basedir', ...);` を実行して実行時に `open_basedir` を設定する場合、親ディレクトリ (`..`) を含んだパスを受け入れなくなりました。これより前のバージョンでは、`..` で始まるパスだけを拒否していました。`..` で始まるパスのみを拒否する制限は、パスの先頭に `./` を付加することで簡単に回避できてしまっていました。
 
   . User exception handlers now catch exceptions during shutdown.
   . ユーザー定義の例外ハンドラは、シャットダウン時の例外もキャッチするようになりました。
@@ -515,7 +515,7 @@ PHP 8.3 UPGRADE NOTES
     uncontrolled recursions involving internal functions or the magic methods
     __toString, __clone, __sleep, __destruct.  This is not related to stack
     buffer overflows, and is not a security feature.
-  . 許可される最大のスタックサイズの値を設定するための、新しい INI ディレクティブです。設定できる値は、'0' (プロセスやスレッドの、スタックサイズの最大値を用います)、'-1' (無制限)、そして正の数値をバイト単位で指定します。デフォルトは '0' です。プロセスやスレッドのスタックサイズの最大値がわからない場合、既知のシステムのデフォルト値を使います。この値に大き過ぎる値を設定すると、スタックサイズの制限を無効にすることと同じ効果があります。ファイバーは 許可される最大のスタックサイズとして fiber.stack_size の値を使います。プロセスのコールスタックが `zend.max_allowed_stack_size-zend.reserved_stack_size` バイトを超えると、スタックオーバーフローが引き起こすセグメンテーションフォルトを防ぐため、Error がスローされます。これは、デバッグを容易にすることが目的です。スタックサイズは、内部関数やマジックメソッド __toString, __clone, __sleep, __destruct を含む、制御できない再帰処理によって増加します。この機能はスタックバッファのオーバーフローとは無関係ですし、セキュリティのための機能でもありません。
+  . 許可される最大のスタックサイズの値を設定するための、新しい INI ディレクティブです。設定できる値は、'0' (プロセスやスレッドの、スタックサイズの最大値を用います)、'-1' (無制限)、そしてバイト単位の正の数値です。デフォルトは '0' です。プロセスやスレッドのスタックサイズの最大値がわからない場合、既知のシステムのデフォルト値を使います。この値に大き過ぎる値を設定すると、スタックサイズの制限を無効にすることと同じ効果があります。ファイバーは 許可される最大のスタックサイズとして fiber.stack_size の値を使います。プロセスのコールスタックが `zend.max_allowed_stack_size-zend.reserved_stack_size` バイトを超えると、スタックオーバーフローが引き起こすセグメンテーションフォルトを防ぐため、Error がスローされます。これは、デバッグを容易にすることが目的です。スタックサイズは、制御できない再帰処理によって増加します。増加する範囲は、内部関数やマジックメソッド __toString, __clone, __sleep, __destruct 内も含みます。この機能はスタックバッファのオーバーフローとは無関係ですし、セキュリティのための機能でもありません。
 
 - zend.reserved_stack_size
   . New INI directive to set the reserved stack size, in bytes. This is
@@ -530,7 +530,7 @@ PHP 8.3 UPGRADE NOTES
 
 - Minimum supported Windows version has been bumped to Windows 8 or
   Windows Server 2012
-- 最低限必要な Windows のバージョンが、Windows 8 と Windows Server 2012 になりました。
+- PHP の実行に最低限必要な Windows のバージョンが、Windows 8 と Windows Server 2012 になりました。
 
 ========================================
 13. その他の変更
@@ -573,7 +573,7 @@ PHP 8.3 UPGRADE NOTES
 
   . Getting text content from nodes now avoids an allocation, resulting in a
     performance gain.
-  . ノードからテキストを取得する際に、メモリを確保する処理を避けるようになりました。結果として、パフォーマンスが向上しています。
+  . ノードからテキストを取得する際に、メモリを確保する処理を避けるようになりました。この結果、パフォーマンスが向上しています。
 
 - 標準ライブラリ:
   . The file() flags error check is now about 7% faster.
