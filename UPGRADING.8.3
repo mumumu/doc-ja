@@ -313,7 +313,7 @@ PHP 8.3 UPGRADE NOTES
   . unserialize() で発生していた E_NOTICE は、E_WARNING に変更されました。
   . unserialize() now emits a new E_WARNING if the input contains unconsumed
     bytes.
-  . 消費されていない入力が残っている場合に、unserialize() は E_WARNING を発生させるよになりました。
+  . 消費されていない入力が残っている場合に、unserialize() は E_WARNING を発生させるようになりました。
     RFC: https://wiki.php.net/rfc/unserialize_warn_on_trailing_data
   . array_pad() is now only limited by the maximum number of elements an array
     can have. Before, it was only possible to add at most 1048576 elements at a
