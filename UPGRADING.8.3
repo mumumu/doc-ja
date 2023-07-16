@@ -366,10 +366,18 @@ PHP 8.3 UPGRADE NOTES
 - DOM:
   . Added DOMNode::contains() and DOMNameSpaceNode::contains().
   . DOMNode::contains() と DOMNameSpaceNode::contains() が追加されました。
+  . Added DOMElement::getAttributeNames().
+  . DOMElement::getAttributeNames() が追加されました。
+  . Added DOMNode::getRootNode(). The $options argument does nothing at the
+    moment because it only influences the shadow DOM, which we do not support
+    yet.
+  . DOMNode::getRootNode() が追加されました。パラメータ $options は現時点では何もしません。なぜなら、これはまだサポートされていない shadow DOM にのみ影響するものだからです。
   . Added DOMElement::className and DOMElement::id.
     This is not binary-safe at the moment because of underlying limitations of
     libxml2.
   . DOMElement::className と DOMElement::id が追加されました。libxml2 の制限により、現時点でこれらはバイナリセーフではありません。
+  . Added DOMParentNode::replaceChildren().
+  . DOMParentNode::replaceChildren() が追加されました。
 
 - JSON:
   . Added json_validate(), which returns whether the json is valid for
