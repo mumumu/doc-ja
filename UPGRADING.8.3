@@ -170,7 +170,9 @@ PHP 8.3 UPGRADE NOTES
     is now deprecated. Moreover, incrementing non-numeric strings is soft
     deprecated and the new str_increment() function should be used instead.
     RFC: https://wiki.php.net/rfc/saner-inc-dec-operators
-  . 空文字列や、数値形式でない文字列、そして英数字でない文字列に対して、++ 演算子を使うことは推奨されなくなりました。さらに、数値形式でない文字列をインクリメントする機能は、将来削除されることはないが推奨はしない(soft-deprecated) 扱いになりました。str_increment() 関数を代わりに使いましょう。
+  . 空文字列や、数値形式でない文字列、そして英数字でない文字列に対して、++ 演算子を使うことは推奨されなくなりました。さらに、数値形式でない文字列をインクリメントする機能は、soft-deprecated 扱いになりました。str_increment() 関数を代わりに使いましょう。
+    [memo] RFC を見る限り、non-numeric string についても soft deprecation ではなく、deprecated に見える...
+
   . Using the -- operator on empty or non-numeric strings is now deprecated.
   . 空文字列や数値形式でない文字列に対して、-- 演算子を使うことは推奨されなくなりました。
     RFC: https://wiki.php.net/rfc/saner-inc-dec-operators
