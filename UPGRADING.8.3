@@ -482,8 +482,8 @@ PHP 8.3 UPGRADE NOTES
     Internal objects that implement an _IS_NUMBER cast but not a do_operator
     handler that overrides addition and substraction now can be incremented
     and decrement as if one would do $o += 1 or $o -= 1
-  . bool 型の値に対して ++ と -- 演算子を使うと、警告が発生します。この結果は、次のメジャーバージョンで変更されるためです。
-    null 型の値をデクリメントすると、警告が発生します。この結果は、次のメジャーバージョンで変更されるためです。
+  . bool 型の値に対して ++ と -- 演算子を使うと、警告が発生するようになりました。この結果は、次のメジャーバージョンで変更されるためです。
+    null 型の値をデクリメントすると、警告が発生するようになりました。この結果は、次のメジャーバージョンで変更されるためです。
     _IS_NUMBER キャストを実装しているが、加算と減算の振る舞いを上書きする do_operator ハンドラを実装していない内部オブジェクトは、$o += 1 や $o -= 1 をあたかも実行したかのように、値をインクリメントしたり、デクリメントできるようになりました。
 
 - DOM:
