@@ -37,7 +37,7 @@ PHP 8.3 UPGRADE NOTES
     Internally, this works by caching the result on posix systems. If you want
     the old behaviour, you can check the "cached" key in the array returned by
     proc_get_status() to check whether the result was cached.
-  . proc_get_status() を複数回コールした場合、posix システム上では常に正しい値を返すようになりました。これより前のバージョンでは、最初の呼び出しの場合にだけ正しい値を返していました。proc_get_status() をコールしたあとに proc_close() を呼び出した場合も、正しい終了コードを返すようになりました。これより前のバージョンでは、-1 を返していました。posix システムでは、この処理は結果の値をキャッシュすることで実現しています。以前の振る舞いを望む場合、proc_get_status() が返す配列の "cached" キーをチェックすることで、結果がキャッシュされているかをチェックできます。
+  . proc_get_status() を複数回コールした場合、posix システムでは常に正しい値を返すようになりました。これより前のバージョンでは、最初の呼び出しの場合にだけ正しい値を返していました。proc_get_status() をコールしたあとに proc_close() を呼び出した場合も、正しい終了コードを返すようになりました。これより前のバージョンでは、-1 を返していました。posix システムでは、この処理は結果の値をキャッシュすることで実現しています。以前の振る舞いを望む場合、proc_get_status() が返す配列の "cached" キーをチェックすることで、結果がキャッシュされているかをチェックできます。
 
   . Zend Max Execution Timers is now enabled by default for ZTS builds on
     Linux.
