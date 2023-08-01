@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 78e98b252116893e0b5b4b3c70a7a308aeab1c8e Maintainer: takagi Status: ready -->
+<!-- EN-Revision: fe6c97ad50b3bcd14d53b47ca2fcc2ad2997da75 Maintainer: takagi Status: ready -->
 <!-- CREDITS: hnw,mumumu -->
 <chapter xml:id="datetime.formats" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>サポートする日付と時刻の書式</title>
@@ -75,6 +75,16 @@
    </simpara>
   </listitem>
   <listitem>
+   <simpara>
+    個別の時刻フォーマット以外にも、
+    日付/時刻のパーサーは
+    <link linkend="datetime.formats.compound">複合的な書式</link>
+    を理解します。たとえば Unixタイムスタンプ
+    (<literal>@1690388256</literal>) や、ISO の週番号
+    (<literal>2008-W28-3</literal>) などです。
+   </simpara>
+  </listitem>
+  <listitem>
    <para>
     不正な日付を渡していないかどうかについて、追加のチェックが行われます:
     <example>
@@ -133,7 +143,7 @@ object(DateTimeImmutable)#1 (3) {
  <!--Time Formats: {{{-->
  <sect1 xml:id="datetime.formats.time">
   <title>時刻の書式</title>
-  
+
   <para>
    このページでは、
    <classname>DateTimeImmutable</classname>, <classname>DateTime</classname>,
@@ -493,7 +503,7 @@ object(DateTimeImmutable)#1 (3) {
     </tbody>
    </tgroup>
   </table>
-  
+
   <table>
    <title>ISO 8601 に準拠した表記法</title>
    <tgroup cols="3">
@@ -1028,9 +1038,10 @@ object(DateTimeImmutable)#1 (3) {
       <entry>"+5 weeks", "12 day", "-7 weekdays"</entry>
      </row>
      <row>
-      <entry><literal>ordinal</literal> <literal>space</literal> <literal>unit</literal></entry>
-      <entry>値を英単語で指定するような、相対的な時間指定を処理します。</entry>
-      <entry>"fifth day", "second month"</entry>
+      <entry>(<literal>ordinal</literal> | <literal>reltext</literal>) <literal>space</literal> <literal>unit</literal></entry>
+      <entry>値を英単語で指定するような、相対的な時間指定を処理します。
+      <literal>last</literal> と <literal>previous</literal> は、<literal>-1</literal> に等しく、<literal>this</literal> に等しいものはありません。そして <literal>next</literal> は <literal>+1</literal> に等しいです。</entry>
+      <entry>"fifth day", "second month", "last day", "previous year"</entry>
      </row>
      <row>
       <entry>'ago'</entry>
@@ -1202,7 +1213,7 @@ object(DateTimeImmutable)#1 (3) {
     <literal>'+1 5 hours'</literal> のようにパースされます。
    </para>
   </note>
-  
+
   <sect2 role="changelog">
    &reftitle.changelog;
    <para>

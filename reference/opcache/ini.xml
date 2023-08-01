@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c7a7f596c4e0109b8c22c463dc01f0e2b43c0754 Maintainer: satoruyoshida Status: ready -->
+<!-- EN-Revision: 9829ec03d3a65da2d4a58f2bc1c886226ee00bc1 Maintainer: satoruyoshida Status: ready -->
 <!-- CREDITS: mumumu -->
 <sect1 xml:id="opcache.configuration" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  &reftitle.runtime;
@@ -474,11 +474,17 @@
     </term>
     <listitem>
      <para>
-      有効にすると、OPcache は、スクリプトが更新されたか
+      有効にすると、OPcache は、スクリプトが更新されたかを
       <link linkend="ini.opcache.revalidate-freq">opcache.revalidate_freq</link> 秒ごとにチェックします。
       このディレクティブが無効な場合、ファイルシステムへの変更を反映するには、
       <function>opcache_reset</function> または <function>opcache_invalidate</function> 関数を介して、
       または Web サーバーを再起動して手動で OPcache をリセットしなければいけません。
+      <note>
+       <simpara>
+        <link linkend="ini.opcache.file_update_protection">opcache.file_update_protection</link>
+        や <link linkend="ini.opcache.max-file-size">opcache.max_file_size</link> の値に0でない値が設定されている場合、OPcache はファイルのタイムスタンプをまだコンパイル時にチェックする可能性があります。
+       </simpara>
+      </note>
      </para>
     </listitem>
    </varlistentry>
@@ -769,9 +775,8 @@
      <para>
       ここで指定された秒数の間は、キャッシュすることを防ぎます。
       これにより、不完全に更新されたファイルがキャッシュされることを防止します。
-      あなたのサイトの全てのファイルの更新がアトミックに行われる場合、
-      この設定を "0"
-      に設定することで、パフォーマンスを向上させられる可能性があります。
+      全てのファイルの更新がアトミックに行われる場合、
+      この設定を "0" に設定することで、パフォーマンスを向上させられる可能性があります。なぜなら、こうすることでファイルがすぐにキャッシュされるからです。
      </para>
     </listitem>
    </varlistentry>
