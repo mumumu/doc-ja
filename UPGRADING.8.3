@@ -497,6 +497,14 @@ PHP 8.3 UPGRADE NOTES
   . Added pg_set_error_context_visibility to set the visibility of the context
     in error messages (with libpq >= 9.6).
   . エラーメッセージの CONTEXT の表示範囲を設定する関数として、pg_set_error_context_visibility が追加されました (libpq >= 9.6 で利用可能です)
+  . Added pg_enter_pipeline_mode().
+  . pg_enter_pipeline_mode() が追加されました。
+  . Added pg_exit_pipeline_mode().
+  . pg_exit_pipeline_mode() が追加されました。
+  . Added pg_pipeline_sync().
+  . pg_pipeline_sync() が追加されました。
+  . Added pg_pipeline_status().
+  . pg_pipeline_status() が追加されました。
 
 - Random:
   . Added Randomizer::getBytesFromString().
@@ -602,9 +610,16 @@ PHP 8.3 UPGRADE NOTES
   . SIGINFO
 
 - PGSQL:
-  . PGSQL_TRACE_SUPPRESS_TIMESTAMPS.
-  . PGSQL_TRACE_REGRESS_MODE.
-  . PGSQL_ERRORS_SQLSTATE.
+  . PGSQL_TRACE_SUPPRESS_TIMESTAMPS
+  . PGSQL_TRACE_REGRESS_MODE
+  . PGSQL_ERRORS_SQLSTATE
+  . PGSQL_PIPELINE_SYNC
+  . PGSQL_PIPELINE_ON
+  . PGSQL_PIPELINE_OFF
+  . PGSQL_PIPELINE_ABORTED
+  . PGSQL_SHOW_CONTEXT_NEVER
+  . PGSQL_SHOW_CONTEXT_ERRORS
+  . PGSQL_SHOW_CONTEXT_ALWAYS
 
 - Posix:
   . POSIX_SC_ARG_MAX
