@@ -285,6 +285,13 @@ PHP 8.3 UPGRADE NOTES
 - Dom:
   . Changed DOMCharacterData::appendData() tentative return type to true.
   . DOMCharacterData::appendData() の仮の戻り値の型が、true になりました。
+  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(), DOMDocument::loadXML(),
+    and DOMDocument::loadXMLFile() now have a tentative return type of bool.
+    Previously, this was documented as having a return type of DOMDocument|bool,
+    but DOMDocument cannot be returned since PHP 8.0 as it is no longer statically
+    callable.
+  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(), DOMDocument::loadXML(),
+    DOMDocument::loadXMLFile() の仮の戻り値の型が、bool になりました。これより前のバージョンでは DOMDocument|bool としてドキュメント化されていましたが、DOMDocument は PHP 8.0 以降は static にコールできなくなっていました。
 
 - Gd:
   . Changed imagerotate signature, removed the `ignore_transparent` argument
