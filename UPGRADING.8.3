@@ -63,6 +63,16 @@ PHP 8.3 UPGRADE NOTES
     returning the following object object(FFI\CData:void) { }
   . void 型を返すC言語の関数は、object(FFI\CData:void) { } ではなく、null を返すようになりました。
 
+- Opcache:
+  . The opcache.consistency_checks INI directive was removed. This feature was
+    broken with the tracing JIT, as well as with inheritance cache, and has been
+    disabled without a way to enable it since PHP 8.1.18 and PHP 8.2.5. Both the
+    tracing JIT and inheritance cache may modify shm after the script has been
+    persisted, invalidating its checksum. The attempted fix skipped over the
+    modifiable pointers but was rejected due to complexity. For this reason, it
+    was decided to remove the feature instead.
+  . INIディレクティブ opcache.consistency_checks が削除されました。この機能は tracing JIT や、inheritance cache (継承関係をキャッシュする機能) と一緒に使った場合に壊れてしまっていました。その後、このディレクティブを有効にする手段が見つからないまま、PHP 8.1.18 と 8.2.5 で無効にされました。tracing JIT と inheritance cache は両方、スクリプトが永続化された後に共有メモリを変更し、そのチェックサムを無効にする可能性があります。変更されうるポインタをスキップする変更も試みられましたが、複雑過ぎて受け入れられませんでした。以上の理由から、壊れてしまうバグを修正するのではなく、ディレクティブそのものが削除されることになりました。
+
 - 標準ライブラリ:
   . The range() function has had various changes:
   . range() 関数に対して、複数の変更が加えられました:
