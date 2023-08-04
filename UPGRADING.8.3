@@ -151,6 +151,12 @@ PHP 8.3 UPGRADE NOTES
   . It is now possible to lint multiple files.
   . 複数のファイルの文法チェックを一度にできるようになりました。
 
+- Opcache
+  . opcache_get_status()['scripts'][n]['revalidate'] now contains a Unix
+    timestamp of when the next revalidation of the scripts timestamp is due,
+    dictated by the opcache.revalidate_freq INI directive.
+  . opcache_get_status()['scripts'][n]['revalidate'] の値に、いつスクリプトの更新チェックを行うかの予定が Unix timestamp として含まれるようになりました。いつチェックを行うかは、opcache.revalidate_freq によって決まります。
+
 - Posix
   . posix_getrlimit() now takes an optional $res parameter to allow fetching a
     single resource limit.
