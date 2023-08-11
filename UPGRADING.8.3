@@ -438,6 +438,11 @@ PHP 8.3 UPGRADE NOTES
     got silently ignored and the number got rounded to zero decimal places.
   . number_format() の $decimals パラメータは、負の値の四捨五入も扱うようになりました。つまり、$decimals が負の値の場合、$num は 小数点以下の有効桁数 $decimals 桁に丸められます。これより前のバージョンでは、負の $decimals を指定しても、黙って無視され、数値は小数点以下が0桁 になるように丸められていました。
 
+- Calendar
+  . easter_date() now supports years from 1970 to 2,000,000,000 on 64-bit systems,
+    previously it only supported years in the range from 1970 to 2037.
+  . easter_date() は、64ビットシステム上で 1970 から 2,000,000,000 までの年の値をサポートしました。これより前のバージョンでは、1970 から 2037 までの年の値だけをサポートしていました。
+
 ========================================
 6. 新しく追加された関数
 ========================================
