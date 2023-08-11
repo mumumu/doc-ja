@@ -793,6 +793,8 @@ PHP 8.3 UPGRADE NOTES
   . Getting text content from nodes now avoids an allocation, resulting in a
     performance gain.
   . ノードからテキストを取得する際に、メモリを確保する処理を避けるようになりました。この結果、パフォーマンスが向上しています。
+  . DOMChildNode::remove() now runs in O(1) performance.
+  . DOMChildNode::remove() は、計算量が O(1) で実行されるようになりました。
 
 - 標準ライブラリ:
   . The file() flags error check is now about 7% faster.
