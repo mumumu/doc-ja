@@ -383,6 +383,14 @@ PHP 8.3 UPGRADE NOTES
     passed.
   . mysqli_poll は、$read と $error が両方渡されない場合、ValueError を発生させるようになりました。
 
+- ODBC
+  . odbc_autocommit() now accepts null for the $enable parameter.
+    Passing null has the same behaviour as passing only 1 parameter,
+    namely indicating if the autocommit feature is enabled or not.
+  . odbc_autocommit() は、$enable パラメータで null を受け入れるようになりました。
+    null を渡すと、パラメータをひとつ渡した場合と同じふるまいをします。
+    つまり、自動コミットが有効かどうかだけを示す動きをします。
+
 - PGSQL:
   . pg_fetch_object now raises a ValueError instead of an Exception when the
     constructor_args argument is non empty with the class not having
