@@ -28,8 +28,8 @@ PHP 8.3 UPGRADE NOTES
 
   . Executing proc_get_status() multiple times will now always return the right
     value on posix systems. Previously, only the first call of the function
-    returned the right value. Executing proc_close() after proc_get_status() will
-    now also return the right exit code. Previously this would return -1.
+    returned the right value. Executing proc_close() after proc_get_status()
+    will now also return the right exit code. Previously this would return -1.
     Internally, this works by caching the result on posix systems. If you want
     the old behaviour, you can check the "cached" key in the array returned by
     proc_get_status() to check whether the result was cached.
@@ -40,9 +40,9 @@ PHP 8.3 UPGRADE NOTES
   . 実行時間の最大秒数を制御するタイマーが、Linux 上で ZTS を有効にしてビルドした場合でもデフォルトで有効になりました。
 
   . Uses of traits with static properties will now redeclare static properties
-    inherited from the parent class. This will create a separate static property
-    storage for the current class. This is analogous to adding the static
-    property to the class directly without traits.
+    inherited from the parent class. This will create a separate static
+    property storage for the current class. This is analogous to adding the
+    static property to the class directly without traits.
   . static プロパティと一緒にトレイトを使うと、親クラスから継承する static プロパティを再宣言するようになりました。つまり、現在のクラスのために別の static プロパティを作成するということです。これは、トレイトを使わずに直接 static プロパティを追加する操作に似ています。
 
   . Assigning a negative index n to an empty array will now make sure that the
@@ -52,26 +52,38 @@ PHP 8.3 UPGRADE NOTES
   . Class constant visibility variance is now correctly checked when inherited
     from interfaces.
   . クラス定数のアクセス権が、インターフェイスから継承した場合でも正しくチェックされるようになりました。
-  . WeakMaps entries whose key maps to itself (possibly transitively) may now be
-    removed during cycle collection if the key is not reachable except by
+
+  . WeakMaps entries whose key maps to itself (possibly transitively) may now
+    be removed during cycle collection if the key is not reachable except by
     iterating over the WeakMap (reachability via iteration is considered weak).
     Previously, such entries would never be automatically removed.
   . (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照のコレクタが削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
 
 - DOM:
   . DOMChildNode::after(), DOMChildNode::before(), DOMChildNode::replaceWith()
-    on a node that has no parent is now a no-op instead of a hierarchy exception,
-    which is the behaviour spec demands.
+    on a node that has no parent is now a no-op instead of a hierarchy
+    exception, which is the behaviour spec demands.
   . DOMChildNode::after(), DOMChildNode::before(), DOMChildNode::replaceWith()
     は、親が存在しないノード上では親子関係に関する例外をスローせず、
     何もしなくなりました。これはDOMの仕様上要求される振る舞いです。
-  . Using the DOMParentNode and DOMChildNode methods without a document now works
-    instead of throwing a HIERARCHY_REQUEST_ERR DOMException. This is in line with
-    the behaviour spec demands.
+
+  . Using the DOMParentNode and DOMChildNode methods without a document now
+    works instead of throwing a HIERARCHY_REQUEST_ERR DOMException. This is in
+    line with the behaviour spec demands.
   . ドキュメントノードが存在しない状態で DOMParentNode と DOMChildNode
     メソッドを使うと、DOMException HIERARCHY_REQUEST_ERR をスローせず、
     エラーなしで動作するようになりました。
     これはDOMの仕様上要求される振る舞いです。
+
+  . createAttributeNS() without specifying a prefix would incorrectly create
+    a default namespace, placing the element inside the namespace instead of
+    the attribute. This bug is now fixed.
+  . prefix を指定せずに createAttributeNS() を呼び出すと、デフォルトの名前空間を誤って作成し、その名前空間中に属性ではなく要素を置いていました。PHP 8.3 では、このバグが修正されています。
+
+  . createAttributeNS() would previously incorrectly throw a NAMESPACE_ERR
+    when the prefix was already used for a different uri. It now correctly
+    chooses a different prefix when there's a prefix name conflict.
+  . 以前のバージョンでは、createAttributeNS() は、prefix が既に異なる uri で使われている場合に NAMESPACE_ERR 例外をスローしていました。prefix の名前が衝突していた場合でも、異なる prefix を正しく選べるようになりました。
 
 - FFI:
   . C functions that have a return type of void now return null instead of
@@ -80,42 +92,55 @@ PHP 8.3 UPGRADE NOTES
 
 - Opcache:
   . The opcache.consistency_checks INI directive was removed. This feature was
-    broken with the tracing JIT, as well as with inheritance cache, and has been
-    disabled without a way to enable it since PHP 8.1.18 and PHP 8.2.5. Both the
-    tracing JIT and inheritance cache may modify shm after the script has been
-    persisted, invalidating its checksum. The attempted fix skipped over the
-    modifiable pointers but was rejected due to complexity. For this reason, it
-    was decided to remove the feature instead.
+    broken with the tracing JIT, as well as with inheritance cache, and has
+    been disabled without a way to enable it since PHP 8.1.18 and PHP 8.2.5.
+    Both the tracing JIT and inheritance cache may modify shm after the script
+    has been persisted by invalidating its checksum. The attempted fix skipped
+    over the modifiable pointers but was rejected due to complexity. For this
+    reason, it was decided to remove the feature instead.
   . INIディレクティブ opcache.consistency_checks が削除されました。この機能は tracing JIT や、inheritance cache (継承関係をキャッシュする機能) と一緒に使った場合に壊れてしまっていました。その後、このディレクティブを有効にする手段が見つからないまま、PHP 8.1.18 と 8.2.5 で無効にされました。tracing JIT と inheritance cache は両方、スクリプトが永続化された後に共有メモリを変更し、そのチェックサムを無効にする可能性があります。変更されうるポインタをスキップする変更も試みられましたが、複雑過ぎて受け入れられませんでした。以上の理由から、壊れてしまうバグを修正するのではなく、ディレクティブそのものが削除されることになりました。
 
-- 標準ライブラリ:
+- Phar:
+  . The type of Phar class constants are now declared.
+  . Phar クラスのクラス定数が、宣言されるようになりました。
+
+- Standard:
   . The range() function has had various changes:
-  . range() 関数に対して、複数の変更が加えられました:
+  . range() 関数に対して、さまざまな変更が加えられました:
     * A TypeError is now thrown when passing objects, resources, or arrays
       as the boundary inputs
     * オブジェクトやリソース、配列を境界の値として渡すと、TypeError がスローされるようになりました。
+    
     * A more descriptive ValueError is thrown when passing 0 for $step
     * step に 0 を渡すと、よりわかりやすい ValueError がスローされるようになりました。
+    
     * A ValueError is now thrown when using a negative $step for increasing ranges
     * 範囲が増加しているのに、$step に負の値を渡すと、ValueError がスローされるようになりました。
+    
     * If $step is a float that can be interpreted as an int, it is now done so
-    * $step が 整数型として解釈できる float の場合、整数型として解釈するようになりました。 
+    * $step が 整数型として解釈できる float の場合、整数型として解釈するようになりました。
+
     * A ValueError is now thrown if any argument is infinity or NAN
     * 引数が無限大または NAN の場合、ValueError がスローされるようになりました。
+
     * An E_WARNING is now emitted if $start or $end is the empty string.
       The value continues to be cast to the value 0.
-    * $start と $end が空文字列の場合、E_WARNING が発生するようになりました。
-      値そのものが 0 にキャストされる動作はそのままです。
+    * $start や $end が空文字列の場合、E_WARNING が発生するようになりました。
+      値そのものが 0 にキャストされる動作は変更されていません。
+
     * An E_WARNING is now emitted if $start or $end has more than one byte,
       only if it is a non-numeric string.
-    * $start や $end の長さが1バイトより長い場合には、それが数値形式の文字列でない場合に限り、E_WARNING が発生するようになりました。
+    * $start や $end が1バイトより長い場合、それが数値形式の文字列でない場合に限り、E_WARNING が発生するようになりました。
+
     * An E_WARNING is now emitted if $start or $end is cast to an integer
       because the other boundary input is a number. (e.g. range(5, 'z');)
-    * $start や $end が整数型にキャストした値の場合、E_WARNING が発生するようになりました。なぜなら、他の境界の値は数値だからです。(e.g. range(5, 'z');)
+    * $start や $end が整数型にキャストした値の場合、E_WARNING が発生するようになりました。なぜなら、他の境界の入力値は数値だからです。(e.g. range(5, 'z');)
+
     * An E_WARNING is now emitted if $step is a float when trying to generate
       a range of characters, except if both boundary inputs are numeric strings
       (e.g. range('5', '9', 0.5); does not produce a warning)
     * $step が float の場合で、ある範囲の文字を生成しようとした場合、E_WARNING が発生するようになりました。但し、境界の値が双方ともに数値形式の文字列の場合を除きます。(例: range('5', '9', 0.5); のようなコードは、警告が発生しません)
+
     * range() now produce a list of characters if one of the boundary inputs is
       a string digit instead of casting the other input to int
       (e.g. range('5', 'z');)
@@ -133,13 +158,13 @@ PHP 8.3 UPGRADE NOTES
 2. 新機能
 ========================================
 
-- PHP コア
+- Core
   . Anonymous classes may now be marked as readonly.
   . 無名クラスは、読み取り専用クラスとしてマークできるようになりました。
 
   . Readonly properties can now be reinitialized during cloning.
-    RFC: https://wiki.php.net/rfc/readonly_amendments
   . 読み取り専用プロパティは、clone する際にも再初期化できるようになりました。
+    RFC: https://wiki.php.net/rfc/readonly_amendments
 
   . Class, interface, trait, and enum constants now support type
     declarations. RFC: https://wiki.php.net/rfc/typed_class_constants
@@ -155,9 +180,12 @@ PHP 8.3 UPGRADE NOTES
     in a parent class or implemented interface.
     RFC: https://wiki.php.net/rfc/marking_overriden_methods
   . 親クラスまたは実装済みのインターフェイス内で、メソッドが存在するかどうかをチェックするアトリビュートとして、#[\Override] が追加されました。
-  . Class constants can now be accessed dynamically using the C::{$name} syntax.
-  . クラス定数は、C::{$name} という構文で動的にアクセスできるようになりました
+
+  . Class constants can now be accessed dynamically using the C::{$name}
+    syntax.
     RFC: https://wiki.php.net/rfc/dynamic_class_constant_fetch
+  . クラス定数は、C::{$name} という構文で動的にアクセスできるようになりました
+
   . Static variable initializers can now contain arbitrary expressions.
     RFC: https://wiki.php.net/rfc/arbitrary_static_variable_initializers
   . static 変数の初期化子に、任意の式を含められるようになりました。
@@ -165,6 +193,11 @@ PHP 8.3 UPGRADE NOTES
 - CLI
   . It is now possible to lint multiple files.
   . 複数のファイルの文法チェックを一度にできるようになりました。
+
+- FFI
+  . It is now possible to assign CData to other CData. This means you can
+    now assign CData to structs and fields.
+  . CData に他の CData を代入できるようになりました。つまり、CData を構造体やフィールドに代入できるようになったということです。
 
 - Opcache
   . opcache_get_status()['scripts'][n]['revalidate'] now contains a Unix
@@ -175,24 +208,25 @@ PHP 8.3 UPGRADE NOTES
 - Posix
   . posix_getrlimit() now takes an optional $res parameter to allow fetching a
     single resource limit.
-  . posix_getrlimit() は、リソースの最大値をひとつだけ取得できる、オプションの $res パラメータが使えるようになりました。
-  . posix_isatty() now raises type warnings for integers following the usual ZPP semantics
+  . posix_getrlimit() で、リソースの最大値をひとつだけ取得できる、オプションの $res パラメータが使えるようになりました。
+  . posix_isatty() now raises type warnings for integers following the usual
+    ZPP semantics.
   . posix_isatty() は、整数値に対しては通常のパラメータ解釈のセマンティクス(ZPP) に従い、警告を発生させるようになりました。
-  . posix_ttyname() now raises type warnings for integers following the usual ZPP semantics
-    and value warnings for invalid file descriptor integers.
+  . posix_ttyname() now raises type warnings for integers following the usual
+    ZPP semantics and value warnings for invalid file descriptor integers.
   . posix_ttyname() は、整数値に対しては通常のパラメータ解釈のセマンティクス(ZPP) に従い、警告を発生させるようになりました。さらに、無効なファイルディスクリプタの整数値に対しても、警告を発生させるようになっています。
 
 - Streams
-  . Streams can now emit the STREAM_NOTIFY_COMPLETED notification. This was previously
-    not implemented.
+  . Streams can now emit the STREAM_NOTIFY_COMPLETED notification. This was
+    previously not implemented.
   . 以前のバージョンでは実装されていなかった新しい通知として、STREAM_NOTIFY_COMPLETED が発生させられるようになりました。
 
 ========================================
 3. SAPI モジュールに対する変更
 ========================================
 
-- $_SERVER['SERVER_SOFTWARE'] value from the built-in CLI server changed
-  to make it compliant with RFC3875.
+- $_SERVER['SERVER_SOFTWARE'] value from the built-in CLI server changed to
+  make it compliant with RFC3875.
 - ビルトインウェブサーバーの $_SERVER['SERVER_SOFTWARE'] の値が 、RFC3875 に準拠する値に変更されました。
 
 ========================================
@@ -204,12 +238,12 @@ PHP 8.3 UPGRADE NOTES
     is now deprecated. Moreover, incrementing non-numeric strings is soft
     deprecated and the new str_increment() function should be used instead.
     RFC: https://wiki.php.net/rfc/saner-inc-dec-operators
-  . 空文字列や、数値形式でない文字列、そして英数字でない文字列に対して、++ 演算子を使うことは推奨されなくなりました。さらに、数値形式でない文字列をインクリメントする機能は、soft-deprecated 扱いになりました。str_increment() 関数を代わりに使いましょう。
-    [memo] RFC を見る限り、non-numeric string についても soft deprecation ではなく、deprecated に見える...
-
+  . 空文字列や、数値形式でない文字列、そして英数字でない文字列に対して、++ 演算子を使うことは推奨されなくなりました。さらに、数値形式でない文字列をインクリメントする機能は、soft-deprecated (新しいコードで使うことは勧めない。使っても将来削除されることはないが、別のやり方に移行することを推奨) 扱いになりました。str_increment() 関数を代わりに使いましょう。
+    
   . Using the -- operator on empty or non-numeric strings is now deprecated.
-  . 空文字列や数値形式でない文字列に対して、-- 演算子を使うことは推奨されなくなりました。
     RFC: https://wiki.php.net/rfc/saner-inc-dec-operators
+  . 空文字列や数値形式でない文字列に対して、-- 演算子を使うことは推奨されなくなりました。
+
   . Calling get_class() and get_parent_class() without arguments is now
     deprecated.
   . get_class() と get_parent_class() を引数なしで呼び出すことは、推奨されなくなりました。
@@ -228,6 +262,7 @@ PHP 8.3 UPGRADE NOTES
     the U_MULTIPLE_DECIMAL_SEP*A*RATORS instead is recommended.
   . 定数 U_MULTIPLE_DECIMAL_SEP*E*RATORS は、推奨されなくなりました。
     代わりに U_MULTIPLE_DECIMAL_SEP*A*RATORS を使いましょう。
+
   . The NumberFormatter::TYPE_CURRENCY has been deprecated.
   . NumberFormatter::TYPE_CURRENCY は、推奨されなくなりました。
 
@@ -248,8 +283,8 @@ PHP 8.3 UPGRADE NOTES
 
 - Random
   . The MT_RAND_PHP Mt19937 variant is deprecated.
-    RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
   . メルセンヌ・ツイスタ の動作モード MT_RAND_PHP は、推奨されなくなりました。
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_3#mt_rand_php
 
 - Standard:
   . The assert_options() function is now deprecated.
@@ -261,21 +296,21 @@ PHP 8.3 UPGRADE NOTES
 
 - SQLite3
   . Using exceptions is now preferred, warnings will be removed in the future.
-    Calling SQLite3::enableExceptions(false) will trigger a depreciation warning
-    in this version.
+    Calling SQLite3::enableExceptions(false) will trigger a depreciation
+    warning in this version.
   . 例外を使うことが推奨されるようになりました。
     警告は将来のバージョンで削除されます。SQLite3::enableExceptions(false) をコールすると、このバージョンでは推奨されない警告が発生します。
 
 - Zip:
   . The ZipArchive::FL_RECOMPRESS constant is deprecated and will be removed
     in a future version of libzip
-  . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなり、将来の libzip のバージョンで削除されます。
+  . 定数 ZipArchive::FL_RECOMPRESS は推奨されなくなりました。将来の libzip のバージョンで削除されます。
 
 ========================================
 5. 変更された関数
 ========================================
 
-- PHP コア:
+- Core:
   . gc_status() has added the following 8 fields:
     "running" => bool
     "protected" => bool
@@ -312,32 +347,41 @@ PHP 8.3 UPGRADE NOTES
   . User exception handlers now catch exceptions during shutdown.
   . ユーザー定義の例外ハンドラは、シャットダウン時の例外もキャッチするようになりました。
 
+  . The resultant HTML of highlight_string and highlight_file has changed.
+    Whitespace between outer HTML tags is removed. Newlines and spaces
+    are no longer converted to HTML entities. The whole HTML is now wrapped in
+    <pre> tag. The outer <span> has been merged with <code>.
+  . highlight_string と highlight_file の結果として出力されるHTMLが、変更されました。
+    外側のHTMLタグの間にあるホワイトスペースは削除されました。改行とスペースはHTMLエンティティに変換されなくなっています。HTML全体は <pre> タグで囲まれるようになりました。外側の <span> タグは <code> タグを使ってマージされました。
+
 - Calendar
-  . easter_date() now supports years from 1970 to 2,000,000,000 on 64-bit systems,
-    previously it only supported years in the range from 1970 to 2037.
+  . easter_date() now supports years from 1970 to 2,000,000,000 on 64-bit
+    systems, previously it only supported years in the range from 1970 to 2037.
   . easter_date() は、64ビットシステム上で 1970 から 2,000,000,000 までの年の値をサポートしました。これより前のバージョンでは、1970 から 2037 までの年の値だけをサポートしていました。
 
 - Curl:
   . curl_getinfo() now supports two new constants: CURLINFO_CAPATH and
     CURLINFO_CAINFO. If option is null, the following two additional keys are
     present: "capath" and "cainfo".
-  . curl_getinfo() は、新しい2つの定数をサポートしました: CURLINFO_CAPATH と CURLINFO_CAINFO です。$option が null の場合、以下の追加のキーが含まれるようになります: "capath", "cainfo"
+  . curl_getinfo() は、新しく2つの定数をサポートしました: CURLINFO_CAPATH と CURLINFO_CAINFO です。$option が null の場合、以下の追加のキーが含まれるようになります: "capath", "cainfo"
 
 - Dom:
   . Changed DOMCharacterData::appendData() tentative return type to true.
   . DOMCharacterData::appendData() の仮の戻り値の型が、true になりました。
-  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(), DOMDocument::loadXML(),
-    and DOMDocument::loadXMLFile() now have a tentative return type of bool.
-    Previously, this was documented as having a return type of DOMDocument|bool,
-    but DOMDocument cannot be returned since PHP 8.0 as it is no longer statically
-    callable.
-  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(), DOMDocument::loadXML(),
-    DOMDocument::loadXMLFile() の仮の戻り値の型が、bool になりました。これより前のバージョンでは DOMDocument|bool としてドキュメント化されていましたが、DOMDocument は PHP 8.0 以降は static にコールできなくなっていました。
+
+  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(),
+    DOMDocument::loadXML() and DOMDocument::loadXMLFile() now have a tentative
+    return type of bool. Previously, this was documented as having a return
+    type of DOMDocument|bool, but DOMDocument cannot be returned since PHP 8.0
+    as it is no longer statically callable.
+  . DOMDocument::loadHTML(), DOMDocument::loadHTMLFile(),
+    DOMDocument::loadXML(), DOMDocument::loadXMLFile() の仮の戻り値の方が、bool になりました。これより前のバージョンでは、DOMDocument|bool を返すとドキュメントには記されていましたが、PHP 8.0 以降は static にコールできなかったため、 DOMDocument が返せていませんでした。
 
 - Gd:
   . Changed imagerotate signature, removed the `ignore_transparent` argument
     as it was not used internally anyway from PHP 7.x.
   . imagerotate 関数のシグネチャが変更され、PHP 7.x 以降で内部的に使われていなかったパラメータ `ignore_transparent` が削除されました。
+
 
 - Intl:
   . datefmt_set_timezone (and its alias IntlDateformatter::setTimeZone)
@@ -345,13 +389,15 @@ PHP 8.3 UPGRADE NOTES
   . datefmt_set_timezone (と、そのエイリアスである IntlDateformatter::setTimeZone)
     は、成功時に true を返すようになりました。
     これより前のバージョンでは、null を返していました。
+
   . IntlBreakiterator::setText() now returns false on failure, previously
     null was returned.
-    now returns true on sucess, previously null was returned.
+    now returns true on success, previously null was returned.
   . IntlBreakiterator::setText() は、失敗時に false を返すようになりました。
     これより前のバージョンでは、null を返していました。
     また、成功時に true を返すようになりました。
     これより前のバージョンでは、null を返していました。
+
   . IntlChar::enumCharNames is now returning a boolean.
     Previously it returned null on success and false on failure.
   . IntlChar::enumCharNames は、戻り値として boolean を返すようになりました。
@@ -363,18 +409,22 @@ PHP 8.3 UPGRADE NOTES
     casing only applies to MB_CASE_LOWER and MB_CASE_TITLE modes, not to
     MB_CASE_LOWER_SIMPLE and MB_CASE_TITLE_SIMPLE.
   . mb_strtolower, mb_strtotitle, mb_convert_case は、ギリシャ文字シグマの条件付きケース変換規則を実装しました。mb_convert_case では、条件付きケース変換は MB_CASE_LOWER と MB_CASE_TITLE モードにのみ適用され、 MB_CASE_LOWER_SIMPLE と MB_CASE_TITLE_SIMPLE には適用されません。
+  
   . mb_decode_mimeheader interprets underscores in QPrint-encoded MIME
     encoded words as required by RFC 2047; they are converted to spaces.
     Underscores must be encoded as "=5F" in such MIME encoded words.
-  . mb_decode_mimeheaderは、RFC 2047 で要求された通りに、qprint でエンコードされた単語のアンダースコアを解釈するようになりました。つまり、それらはスペースに変換されます。このようにMIMEエンコードされた単語では、アンダースコアは "=5F" としてエンコードされなければいけません。
+  . mb_decode_mimeheader は、RFC 2047 で要求された通りに、Qprint でエンコードされた単語のアンダースコアを解釈するようになりました。つまり、それらはスペースに変換されます。このようにMIMEエンコードされた単語では、アンダースコアは "=5F" としてエンコードしなければいけません。
+  
   . In rare cases, mb_encode_mimeheader will transfer-encode its input
     string where it would pass it through as raw ASCII in PHP 8.2.
   . mb_encode_mimeheader の実装が変更され、レアケースではあるものの、PHP 8.2 で生の ASCII として渡されていた入力文字列が、transfer_encoding の値でエンコードされる場合があります。
+
   . mb_encode_mimeheader no longer drops NUL (zero) bytes when
     QPrint-encoding the input string. This previously caused strings in
     certain text encodings, especially UTF-16 and UTF-32, to be
     corrupted by mb_encode_mimeheader.
-  . mb_encode_mimeheader は、qprint エンコーディングの場合に、NUL(ゼロ)バイトを削除しなくなりました。これより前のバージョンでは、あるテキストエンコーディングの場合(特に UTF-16 と UTF-32) に、NUL バイトが削除され、mb_encode_mimeheader の結果が壊れる場合がありました。
+  . mb_encode_mimeheader は、入力文字列が Qprint エンコーディングの場合に、NUL(ゼロ)バイトを削除しなくなりました。これより前のバージョンでは、あるテキストエンコーディングの場合(特に UTF-16 と UTF-32) に、NUL バイトが削除され、mb_encode_mimeheader の結果が壊れる場合がありました。
+  
   . mb_detect_encoding's "non-strict" mode now behaves as described in the
     documentation. Previously, it would return false if the same byte
     (for example, the first byte) of the input string was invalid in all
@@ -387,16 +437,21 @@ PHP 8.3 UPGRADE NOTES
     encountered later in the string. This is different from the behavior
     described in the documentation, which says: "If strict is set to false,
     the closest matching encoding will be returned."
-  . mb_detect_encoding の "$strict に true を指定しない" モードが、ドキュメントの通りに振る舞うようになりました。これより前のバージョンでは、入力文字列と同一のバイト(たとえば、最初のバイト) が、候補となるエンコーディングのリスト全てに対して不正と判定された場合でも、false を返していました。もっと一般化すると、不正なバイトが見つかった時点で、候補となるエンコーディングから削除してしまっていました。そして、入力と同一のバイトを削除した場合に、残りのエンコーディングをすべて候補として考慮すべき場合でも、false を返していました。一方で、候補となるエンコーディングが削除されて残りがひとつだけになった場合、文字列中で後にどれくらいエンコーディングのエラーが見つかるのかを考慮することなく、その残ったエンコーディングを返していました。この振る舞いは、ドキュメントの以下の説明と一致しません: "strict が false の場合、 もっとも近いと判定された文字エンコーディングが返されます"
+   . mb_detect_encoding の "$strict に true を指定しない" モードが、ドキュメントの通りに振る舞うようになりました。これより前のバージョンでは、入力文字列と同一のバイト(たとえば、最初のバイト) が、候補となるエンコーディングのリスト全てに対して不正と判定された場合でも、false を返していました。もっと一般化すると、不正なバイトが見つかった時点で、候補となるエンコーディングから削除してしまっていました。そして、入力と同一のバイトを削除した場合に、残りのエンコーディングをすべて候補として考慮すべき場合でも、false を返していました。一方で、候補となるエンコーディングが削除されて残りがひとつだけになった場合、文字列中で後にどれくらいエンコーディングのエラーが見つかるのかを考慮することなく、その残ったエンコーディングを返していました。この振る舞いは、ドキュメントの以下の説明と一致しません: "strict が false の場合、 もっとも近いと判定された文字エンコーディングが返されます"
 
 - mysqli:
   . mysqli_fetch_object now raises a ValueError instead of an Exception when
     the constructor_args argument is non empty with the class not having
     constructor.
   . mysqli_fetch_object は、 $constructor_args が空でないのに、クラスにコンストラクタが存在しない場合、 Exception ではなく ValueError を発生させるようになりました。
+  
   . mysqli_poll now raises a ValueError when the read nor error arguments are
     passed.
   . mysqli_poll は、$read と $error が両方渡されない場合、ValueError を発生させるようになりました。
+
+  . mysqli_field_seek and mysqli_result::field_seek now specify return type
+    as true instead of bool.
+  . mysqli_field_seek と mysqli_result::field_seek の戻り値の型が、bool ではなく true に変更されました。
 
 - ODBC
   . odbc_autocommit() now accepts null for the $enable parameter.
@@ -411,14 +466,17 @@ PHP 8.3 UPGRADE NOTES
     constructor_args argument is non empty with the class not having
     constructor.
   . pg_fetch_object は、$constructor_args が空でないのに、クラスにコンストラクタが存在しない場合、 Exception ではなく ValueError を発生させるようになりました。
+  
   . pg_insert now raises a ValueError instead of a WARNING when the table
     specified is invalid.
   . pg_insert は 指定されたテーブルが無効な場合に、警告ではなく ValueError を発生させるようになりました。
+  
   . pg_insert and pg_convert raises a ValueError or a TypeError instead of a
     WARNING when the value/type of a field does not match properly with a
     PostGreSQL's type.
   . pg_insert と pg_convert は、フィールドの値/タイプ が PostgreSQL の型と一致しない場合に、
     警告ではなく ValueError や TypeError を発生させるようになりました。
+
   . The $row param of pg_fetch_result(), pg_field_prtlen() and
     pg_field_is_null() is now nullable.
   . pg_fetch_result(), pg_field_prtlen(), pg_field_is_null() のパラメータ $row は、nullable になりました。
@@ -426,49 +484,73 @@ PHP 8.3 UPGRADE NOTES
 - Random:
   . Changed mt_srand() and srand() to not check the number of arguments to
     determine whether a random seed should be used. Passing null will generate
-    a random seed, 0 will use zero as the seed. The functions are now consistent
-    with Mt19937::__construct().
-  . mt_srand() と srand() は、ランダムなシードを使うかを決めるために引数の数をチェックしなくなりました。null を渡すとランダムなシードを使います。0 を渡すとゼロをシードとして使います。これらの関数の振る舞いは、Mt19937::__construct() と一貫したものになりました。
+    a random seed, 0 will use zero as the seed. The functions are now
+    consistent with Mt19937::__construct().
+  . mt_srand() と srand() は、ランダムなシードを使うかを決めるために、引数の数をチェックしなくなりました。null を渡すとランダムなシードを使います。0 を渡すとゼロをシードとして使います。これらの関数の振る舞いは、Mt19937::__construct() と一貫したものになりました。
 
 - Reflection:
   . Return type of ReflectionClass::getStaticProperties() is no longer nullable.
-  . ReflectionClass::getStaticProperties() の戻り値の方は、nullable ではなくなりました。
+  . ReflectionClass::getStaticProperties() の戻り値の型は、nullable ではなくなりました。
 
-- 標準ライブラリ:
+  . Calling ReflectionProperty::setValue() with only one parameter is deprecated.
+    To set static properties, pass null as the first parameter.
+  . ReflectionProperty::setValue() にひとつだけ引数を渡してコールすることは、推奨されなくなりました。static プロパティを設定するには、最初の引数に null を渡します。
+
+- Standard:
   . E_NOTICEs emitted by unserialize() have been promoted to E_WARNING.
     RFC: https://wiki.php.net/rfc/improve_unserialize_error_handling
   . unserialize() で発生していた E_NOTICE は、E_WARNING に変更されました。
+
   . unserialize() now emits a new E_WARNING if the input contains unconsumed
     bytes.
-  . 消費されていない入力が残っている場合に、unserialize() は E_WARNING を発生させるようになりました。
     RFC: https://wiki.php.net/rfc/unserialize_warn_on_trailing_data
+  . 消費されていない入力が残っている場合に、unserialize() は E_WARNING を発生させるようになりました。
+
   . array_pad() is now only limited by the maximum number of elements an array
     can have. Before, it was only possible to add at most 1048576 elements at a
     time.
   . array_pad() は、配列が持つことができる最大の要素数だけを制限するようになりました。これより前のバージョンでは、一度に追加できる最大の要素数が 1048576 になっていました。
-  . strtok() raises a warning in the case token is not provided when starting tokenization.
+  
+  . strtok() raises a warning in the case token is not provided when starting
+    tokenization.
   . strtok() は、トークンの分割を開始した際にトークンが与えられていない場合、警告を発生させるようになりました。
+  
   . password_hash() will now chain the underlying Random\RandomException
     as the ValueError’s $previous Exception when salt generation fails.
   . password_hash() は、ソルトの生成が失敗した場合に、ValueError の $previous (直前にスローされた例外) として、既に存在する Random\RandomException をチェインさせるようになりました。
+
   . proc_open() $command array must now have at least one non empty element.
   . proc_open() の $command 配列は、空でない要素を少なくともひとつ含んでいることが必須になりました。
-  . array_sum() and array_product() now warn when values in the array cannot be converted to int/float.
-    Previously arrays and objects where ignored whilst every other value was cast to int.
-    Moreover, objects that define a numeric cast (e.g. GMP) are now casted instead of ignored.
+
+  . array_sum() and array_product() now warn when values in the array cannot
+    be converted to int/float. Previously arrays and objects where ignored
+    whilst every other value was cast to int. Moreover, objects that define
+    a numeric cast (e.g. GMP) are now casted instead of ignored.
+    RFC: https://wiki.php.net/rfc/saner-array-sum-product
   . array_sum() と array_product() は、配列に含まれる値が int/float に変換できない場合、警告を発生させるようになりました。
     これより前のバージョンでは、配列とオブジェクトは無視され、それら以外の値は int にキャストされていました。
     さらに、数値へのキャストを定義しているオブジェクト (例: GMP) は、無視されるのではなく、数値に変換されるようになっています。
-    RFC: https://wiki.php.net/rfc/saner-array-sum-product
+
   . number_format() $decimal parameter handles rounding to negative places. It
     means that when $decimals is negative, $num is rounded to $decimals
     significant digits before the decimal point. Previously negative $decimals
     got silently ignored and the number got rounded to zero decimal places.
   . number_format() の $decimals パラメータは、負の値の四捨五入も扱うようになりました。つまり、$decimals が負の値の場合、$num は 小数点以下の有効桁数 $decimals 桁に丸められます。これより前のバージョンでは、負の $decimals を指定しても、黙って無視され、数値は小数点以下が0桁 になるように丸められていました。
 
+
+  . The $before_needle argument added to strrchr() which works in the same way
+    like its counterpart in strstr() or stristr().
+  . strrchr() に $before_needle が追加され、strstr() や stristr() の仲間のように、同じような動作をするようになりました。
+
+  . str_getcsv() and fgetcsv() return empty string instead of a string with
+    a single zero byte for the last field which contains only unterminated
+    enclosure.
+  . str_getcsv() と fgetcsv() は、最後のフィールドに終端されていないクォートだけが含まれている場合、0バイトの文字列を返すのではなく、空文字列を返すようになりました。
+
 ========================================
 6. 新しく追加された関数
 ========================================
+
 
 - Date:
   . Added DatePeriod::createFromISO8601String() as a replacement for the
@@ -499,6 +581,8 @@ PHP 8.3 UPGRADE NOTES
   . Added DOMElement::insertAdjacentElement() and
     DOMElement::insertAdjacentText().
   . DOMElement::insertAdjacentElement() と DOMElement::insertAdjacentText() が追加されました。
+  . Added DOMElement::toggleAttribute().
+  . DOMElement::toggleAttribute() が追加されました。
 
 - Intl:
   . Added IntlCalendar::setDate() and IntlCalendar::setDateTime()
@@ -578,11 +662,11 @@ PHP 8.3 UPGRADE NOTES
   . ZipArchive::setArchiveFlag と ZipArchive::getArchiveFlag メソッドが追加されました。
 
 ========================================
-7. New Classes and Interfaces
+7. 新しいクラスとインターフェイス
 ========================================
 
 ========================================
-8. Removed Extensions and SAPIs
+8. 削除された拡張モジュールとSAPI
 ========================================
 
 ========================================
@@ -591,17 +675,18 @@ PHP 8.3 UPGRADE NOTES
 
 - Core:
   . WeakMaps now have ephemeron-like behavior: Entries whose key maps to itself
-    (possibly transitively) may be removed during cycle collection if the key is
-    not reachable except by iterating over the WeakMap (reachability via
+    (possibly transitively) may be removed during cycle collection if the key
+    is not reachable except by iterating over the WeakMap (reachability via
     iteration is considered weak). Previously, such entries would never be
     automatically removed. (See GH-10932.)
   . WeakMap は、以下の ephemeron ライクな振る舞いをするようになりました: (おそらく推移的に) キーが自分自身を参照している WeakMap のエントリを、そのキーが到達できない場合に、循環参照のコレクタが削除できるようになりました。但し、WeakMap をループしている場合を除きます(ループ経由で到達できることは、weak と見なされるためです)。これより前のバージョンでは、こうしたエントリは自動で決して削除されませんでした。
+  
   . The ++ and -- operators now emit warnings when attempting to increment
     values of type bool as this will change in the next major version.
     A warning is emitted when trying to decrement values of type null, as
     this will change in the next major version.
     Internal objects that implement an _IS_NUMBER cast but not a do_operator
-    handler that overrides addition and substraction now can be incremented
+    handler that overrides addition and subtraction now can be incremented
     and decrement as if one would do $o += 1 or $o -= 1
   . bool 型の値に対して ++ と -- 演算子を使うと、警告が発生するようになりました。この結果は、次のメジャーバージョンで変更されるためです。
     null 型の値をデクリメントすると、警告が発生するようになりました。この結果は、次のメジャーバージョンで変更されるためです。
@@ -616,8 +701,9 @@ PHP 8.3 UPGRADE NOTES
   . The SQLite3 class now throws \SQLite3Exception (extends \Exception) instead
     of \Exception.
   . SQLite3 クラスは、\Exception ではなく、(\Exception を継承した) \SQLite3Exception をスローするようになりました。
-  . The SQLite error code is now passed in the exception error code instead of being
-    included in the error message.
+
+  . The SQLite error code is now passed in the exception error code instead of
+    being included in the error message.
   . SQLite のエラーコードは、エラーメッセージに含められるのではなく、例外に渡されるようになりました。
 
 ========================================
@@ -652,6 +738,9 @@ PHP 8.3 UPGRADE NOTES
 - PCNTL:
   . SIGINFO
 
+- PDO_ODBC
+  . PDO_ODBC_TYPE
+
 - PGSQL:
   . PGSQL_TRACE_SUPPRESS_TIMESTAMPS
   . PGSQL_TRACE_REGRESS_MODE
@@ -682,6 +771,8 @@ PHP 8.3 UPGRADE NOTES
 
 - Sockets:
   . SO_ATTACH_REUSEPORT_CBPF (Linux only).
+  . SO_DETACH_BPF (Linux only).
+  . SO_DETACH_FILTER (Linux only).
   . TCP_QUICKACK (Linux only).
   . IP_DONTFRAG (FreeBSD only).
   . IP_MTU_DISCOVER (Linux only).
@@ -711,11 +802,10 @@ PHP 8.3 UPGRADE NOTES
   . ZipArchive::AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE (libzip >= 1.10)
   . ZipArchive::FL_OPEN_FILE_NOW
   . ZipArchive::LENGTH_TO_END as default value for addFile and replaceFile
-  . ZipArchive::LENGTH_TO_END(addFile と replaceFile のデフォルト値)
   . ZipArchive::LENGTH_UNCHECKED (libzip >= 1.10.1)
 
 ========================================
-11. INIファイルのハンドリングに対する変更
+11. Changes to INI File Handling
 ========================================
 
 - assert.*
@@ -778,19 +868,19 @@ PHP 8.3 UPGRADE NOTES
   . An Error is now thrown when the process call stack exceeds a certain size,
     to prevent stack-overflow-induced segmentation faults, with the goal of
     making debugging easier. The maximum allowed stack size is controlled
-    by the INI directives zend.max_allowed_stack_size, zend.reserved_stack_size,
-    and fiber.stack_size.
+    by the INI directives zend.max_allowed_stack_size,
+    zend.reserved_stack_size and fiber.stack_size.
   . プロセスのコールスタックがあるサイズを超えた場合、スタックオーバーフローが引き起こすセグメンテーションフォルトを避けるため、Error をスローするようになりました。この変更の目的は、デバッグをやりやすくするためです。許可されるスタックのサイズの最大値は INI ディレクティブ zend.max_allowed_stack_size, zend.reserved_stack_size, fiber.stack_size で制御できます。
 
 - FFI:
-  . FFI::load() is now allowed during preloading when opcache.preload_user is the
-    current system user. Previously, calling FFI::load() was not possible during
-    preloading if the opcache.preload_user directive was set.
+  . FFI::load() is now allowed during preloading when opcache.preload_user is
+    the current system user. Previously, calling FFI::load() was not possible
+    during preloading if the opcache.preload_user directive was set.
   . opcache.preload_user が現在のシステムユーザーに設定されている場合でも、事前ロードの間に FFI::load() の呼び出しを許可するようになりました。これより前のバージョンでは、opcache.preload_user が設定されている場合は、事前ロードの間に FFI::load() の呼び出しを許可していませんでした。
 
 - FPM:
   . FPM CLI test now fails if the socket path is longer than supported by OS.
-  . FPM CLI は、ソケットのパスの長さが OS がサポートする長さ以上の場合に、テストが失敗するようになりました。
+  . FPM CLI は、ソケットのパスの長さが OS がサポートする長さ以上の場合に、テストを失敗させるようになりました。
 
 - Opcache:
   . In the cli and phpdbg SAPIs, preloading does not require the
@@ -802,24 +892,35 @@ PHP 8.3 UPGRADE NOTES
 - Streams:
   . Blocking fread() on socket connection returns immediately if there are
     any buffered data instead of waiting for more data.
-  . ソケット接続をブロックする fread() 関数は、バッファリングされているデータが存在した場合、追加のデータをデータを待つのではなく、すぐに値を返すようになりました。
+  . ソケット接続をブロックする fread() 関数は、バッファリングされているデータが存在した場合、追加のデータを待つのではなく、すぐに値を返すようになりました。
+
+  . Memory stream no longer fails if seek offset is past the end. Instead
+    the memory is increase on the next write and date between the old end and
+    offset is filled with zero bytes in the same way how it works for files.
+  . seek のオフセットが終端を超えた場合でも、memory ストリームは失敗しなくなりました。代わりに、次回書き込まれたときにメモリサイズが増加し、以前の終端やオフセットは、ファイルを扱っているときのようにゼロバイトで埋められます。
+
+  . stat() access operations like file_exists() and similar will now use real
+    path instead of the actual stream path. This is consistent with stream
+    opening.
+  . stat() のファイルアクセス操作が、file_exist() 類似の関数と同様に、ストリームのパスではなく、実在のパスを使うようになりました。これはストリームをオープンするときの振る舞いと一致します。
 
 ========================================
-14. パフォーマンスに関わる変更
+14. パフォーマンスの向上
 ========================================
 
 - DOM:
   . Looping over a DOMNodeList now uses caching. Therefore requesting items no
     longer takes quadratic time by default.
-  . DOMNodeList をループさせた場合、キャッシュされるようになりました。よって、ノードをリクエストする処理に、デフォルトで O(n^2) 時間かかることはなくなりました。
+  . DOMNodeList をループさせた場合、キャッシュを使うようになりました。よって、ノードをリクエストする処理に、デフォルトで O(n^2) 時間かかることはなくなりました。
 
   . Getting text content from nodes now avoids an allocation, resulting in a
     performance gain.
   . ノードからテキストを取得する際に、メモリを確保する処理を避けるようになりました。この結果、パフォーマンスが向上しています。
+
   . DOMChildNode::remove() now runs in O(1) performance.
   . DOMChildNode::remove() は、計算量が O(1) で実行されるようになりました。
 
-- 標準ライブラリ:
+- Standard:
   . The file() flags error check is now about 7% faster.
   . file() 関数の flags パラメータのエラーチェックは、約7% 高速になりました。
 
